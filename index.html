@@ -53,8 +53,25 @@
     <a href="#esportes">Esportes</a>
     <a href="#eventos">Eventos</a>
   </nav>
-  <a class="btn btn--sm mag" href="#orcamento"><span>Pedir orçamento</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
+  <a class="btn btn--sm mag hd-cta" href="#orcamento"><span>Pedir orçamento</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
+  <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="mnav" aria-label="Abrir menu"><span class="menu-lines" aria-hidden="true"><i></i><i></i></span></button>
 </header>
+
+<div class="mnav" id="mnav" role="dialog" aria-modal="true" aria-label="Menu" inert>
+  <nav class="mnav-links" aria-label="Menu principal">
+    <a href="#anatomia"><span>02</span>O troféu</a>
+    <a href="#fabrica"><span>03</span>Fábrica</a>
+    <a href="#colecao"><span>04</span>Coleção</a>
+    <a href="#esportes"><span>05</span>Esportes</a>
+    <a href="#eventos"><span>06</span>Eventos</a>
+  </nav>
+  <a class="btn mnav-cta" href="#orcamento"><span>Criar minha premiação</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
+  <div class="mnav-foot">
+    <a href="https://wa.me/5532998042012" target="_blank" rel="noopener">WhatsApp</a>
+    <a href="https://www.instagram.com/acheitrofeus/" target="_blank" rel="noopener">Instagram</a>
+    <a href="https://bit.ly/acheitrofeuscombr" target="_blank" rel="noopener">Loja</a>
+  </div>
+</div>
 
 <aside class="rail" aria-hidden="true">
   <span class="rail-n">00</span>
@@ -68,7 +85,7 @@
 <section class="hero" id="top" data-rail="00|Eternizamos" data-bg="#0b0a09" data-fg="#efe8dc">
   <div class="hero-pin">
     <div class="hero-bg"></div>
-    <p class="eyebrow hero-eyebrow">Indústria de premiações · Todo o Brasil</p>
+    <p class="eyebrow hero-eyebrow">Indústria de premiações<span class="d-only"> · Todo o Brasil</span></p>
     <h1 class="d hero-h" aria-label="Eternizamos conquistas.">
       <span class="ln"><span class="w1">Eternizamos</span></span>
       <span class="ln"><span class="w2">Conquistas<span class="dot">.</span></span></span>
@@ -93,12 +110,12 @@
 <!-- 01 · CONQUISTA ======================================================== -->
 <section class="cq" id="conquista" data-rail="01|A conquista" data-bg="#0b0a09" data-fg="#efe8dc">
   <div class="cq-pin">
-    <figure class="cq-ph p1" data-y="72,-110"><div class="cut"><img src="img/celebra.webp" width="1000" height="1261" alt="Time comemora título erguendo o troféu" loading="lazy" decoding="async"></div><figcaption>O apito final</figcaption></figure>
-    <figure class="cq-ph p2" data-y="98,-130"><div class="cut"><img src="img/kidmedal.webp" width="1000" height="1261" alt="Menino morde a medalha dourada com o polegar para cima" loading="lazy" decoding="async"></div><figcaption>A primeira medalha</figcaption></figure>
-    <figure class="cq-ph p3" data-y="132,-92"><div class="cut"><img src="img/volei.webp" width="932" height="1048" alt="Atletas de vôlei de praia se abraçam segurando o troféu" loading="lazy" decoding="async"></div><figcaption>O título é do time</figcaption></figure>
-    <figure class="cq-ph p4" data-y="165,-135"><div class="cut"><img src="img/petkovic.webp" width="1000" height="1261" alt="Torcedor com a camisa 10 Petkovic patrocinada pela Achei Troféus" loading="lazy" decoding="async"></div><figcaption>Copa Fla</figcaption></figure>
-    <figure class="cq-ph p5" data-y="198,-82"><div class="cut"><img src="img/kids.webp" width="1000" height="1261" alt="Crianças com camisas do Flamengo mostram suas medalhas" loading="lazy" decoding="async"></div><figcaption>A base</figcaption></figure>
-    <figure class="cq-ph p6" data-y="232,-72"><div class="cut"><img src="img/futevolei.webp" width="1000" height="1261" alt="Atleta de futevôlei na areia segurando troféu" loading="lazy" decoding="async"></div><figcaption>Na areia</figcaption></figure>
+    <figure class="cq-ph p1" data-y="72,-110" data-ym="92,-70"><div class="cut"><img src="img/celebra.webp" width="1000" height="1261" alt="Time comemora título erguendo o troféu" loading="lazy" decoding="async"></div><figcaption>O apito final</figcaption></figure>
+    <figure class="cq-ph p2" data-y="98,-130" data-ym="118,-60"><div class="cut"><img src="img/kidmedal.webp" width="1000" height="1261" alt="Menino morde a medalha dourada com o polegar para cima" loading="lazy" decoding="async"></div><figcaption>A primeira medalha</figcaption></figure>
+    <figure class="cq-ph p3" data-y="132,-92" data-ym="146,-52"><div class="cut"><img src="img/volei.webp" width="932" height="1048" alt="Atletas de vôlei de praia se abraçam segurando o troféu" loading="lazy" decoding="async"></div><figcaption>O título é do time</figcaption></figure>
+    <figure class="cq-ph p4" data-y="165,-135" data-ym="172,-44"><div class="cut"><img src="img/petkovic.webp" width="1000" height="1261" alt="Torcedor com a camisa 10 Petkovic patrocinada pela Achei Troféus" loading="lazy" decoding="async"></div><figcaption>Copa Fla</figcaption></figure>
+    <figure class="cq-ph p5" data-y="198,-82" data-ym="200,-30"><div class="cut"><img src="img/kids.webp" width="1000" height="1261" alt="Crianças com camisas do Flamengo mostram suas medalhas" loading="lazy" decoding="async"></div><figcaption>A base</figcaption></figure>
+    <figure class="cq-ph p6" data-y="232,-72" data-ym="226,-14"><div class="cut"><img src="img/futevolei.webp" width="1000" height="1261" alt="Atleta de futevôlei na areia segurando troféu" loading="lazy" decoding="async"></div><figcaption>Na areia</figcaption></figure>
 
     <div class="cq-text">
       <p class="eyebrow">01 — A conquista</p>
@@ -164,6 +181,7 @@
 
   <div class="fab-h">
     <div class="fab-pin">
+      <div class="xlabel m-only" aria-hidden="true"><span>O processo</span><span>Deslize →</span></div>
       <div class="fab-track">
         <figure class="fr fr--p fr--up"><span class="num">01</span><div class="cut"><img src="img/office.webp" width="1000" height="951" alt="Equipe da Achei trabalhando no escritório de criação" loading="lazy" decoding="async"></div><figcaption><b>Projeto</b><span>Toda peça começa como desenho: escudo, cores, textos e a identidade do seu evento.</span></figcaption></figure>
         <figure class="fr fr--l fr--down"><span class="num">02</span><div class="cut"><img src="img/blanks.webp" width="1000" height="640" alt="Dezenas de peças cortadas em madeira e preto, lado a lado" loading="lazy" decoding="async"></div><figcaption><b>Corte</b><span>Contornos precisos, em série. Antes do apito final, antes do pódio, antes das fotos.</span></figcaption></figure>
@@ -186,7 +204,7 @@
 
 <!-- 04 · ACABAMENTO + COLEÇÃO ============================================= -->
 <section class="sup" id="acabamento" data-rail="04|Acabamento" data-bg="#efe8dc" data-fg="#0b0a09">
-  <div class="sup-intro" style="padding:0 var(--gut) 7vh calc(var(--gut) + 40px)"><p class="eyebrow">04 — Acabamento</p></div>
+  <div class="sup-intro"><p class="eyebrow">04 — Acabamento</p></div>
   <h2 class="d sup-h">
     <span class="row"><span class="ln ln-inline"><span>O ouro</span></span> <span class="pill lit"><span class="cut"><img src="img/gold.webp" width="1000" height="736" alt="" loading="lazy"></span><i class="sheen"></i></span> <span class="ln ln-inline"><span class="serif">que reflete.</span></span></span>
     <span class="row"><span class="ln ln-inline"><span>A cor</span></span> <span class="pill lit"><span class="cut"><img src="img/blue.webp" width="1000" height="1261" alt="" loading="lazy" style="object-position:50% 70%"></span><i class="sheen"></i></span> <span class="ln ln-inline"><span class="serif">que aparece.</span></span></span>
@@ -218,14 +236,14 @@
   </div>
   <div class="col-grid">
     <figure class="pc pc--a" data-speed="-6"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/1527"><img src="img/cut/copa.webp" width="900" height="1527" alt="Troféus Copa Achei Troféus 2026 — Campeão e vice Sub 20" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Copa Achei Troféus</b><span>Campeão e vice · Sub 20</span></figcaption></figure>
-    <figure class="pc pc--b" data-speed="8"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/935"><img src="img/cut/rings.webp" width="900" height="935" alt="Troféus Word Comp em anéis dourados" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Word Comp</b><span>Artilheiro · Melhor jogador</span></figcaption></figure>
-    <figure class="pc pc--c" data-speed="4"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/1033"><img src="img/cut/futsal.webp" width="900" height="1033" alt="Troféus Copa Minas Gerais de Futsal" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Copa Minas Gerais de Futsal</b><span>Adulto feminino</span></figcaption></figure>
+    <figure class="pc pc--b m-hide" data-speed="8"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/935"><img src="img/cut/rings.webp" width="900" height="935" alt="Troféus Word Comp em anéis dourados" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Word Comp</b><span>Artilheiro · Melhor jogador</span></figcaption></figure>
+    <figure class="pc pc--c m-hide" data-speed="4"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/1033"><img src="img/cut/futsal.webp" width="900" height="1033" alt="Troféus Copa Minas Gerais de Futsal" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Copa Minas Gerais de Futsal</b><span>Adulto feminino</span></figcaption></figure>
     <figure class="pc pc--d" data-speed="-4"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/1417"><img src="img/cut/roxo.webp" width="900" height="1417" alt="Troféu roxo espelhado Desafio Regional de Equipes" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Desafio Regional de Equipes</b><span>Campeão</span></figcaption></figure>
     <figure class="pc pc--e" data-speed="10"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/1192"><img src="img/cut/tenis.webp" width="900" height="1192" alt="Troféus Ranking Tennis dourado e prata" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Ranking Tennis</b><span>Campeão · Categoria C</span></figcaption></figure>
     <figure class="pc pc--f" data-speed="6"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/1103"><img src="img/cut/bananinha.webp" width="900" height="1103" alt="Troféus Bananinha Cup — Campeão Sub 11" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Bananinha Cup</b><span>Campeão · Sub 11</span></figcaption></figure>
     <figure class="pc pc--g" data-speed="-8"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/935"><img src="img/cut/queimada.webp" width="900" height="935" alt="Troféus Queimada Feminino em dourado, prata e rosé" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Queimada Feminino</b><span>Elas dominam o jogo</span></figcaption></figure>
     <figure class="pc pc--h" data-speed="5"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/1177"><img src="img/cut/medal.webp" width="900" height="1177" alt="Medalha de metal do 16º Encontro Esportivo IFMG 2026" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Encontro Esportivo IFMG</b><span>Medalha de metal</span></figcaption></figure>
-    <figure class="pc pc--i" data-speed="-5"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/1358"><img src="img/cut/futebol.webp" width="900" height="1358" alt="Troféus de futebol campeão e vice-campeão" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Futebol</b><span>Campeão · Vice-campeão</span></figcaption></figure>
+    <figure class="pc pc--i m-hide" data-speed="-5"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/1358"><img src="img/cut/futebol.webp" width="900" height="1358" alt="Troféus de futebol campeão e vice-campeão" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Futebol</b><span>Campeão · Vice-campeão</span></figcaption></figure>
   </div>
 </section>
 
@@ -236,13 +254,14 @@
       <p class="eyebrow">05 — Esportes</p>
       <h2 class="d d-xl rv"><span class="ln"><span>Escolha</span></span><span class="ln"><span>seu esporte<span class="red">.</span></span></span></h2>
     </div>
-    <p class="lede">Do futebol de base às homenagens corporativas. Passe o mouse, escolha a modalidade e comece a montar sua premiação.</p>
+    <p class="lede">Do futebol de base às homenagens corporativas. <span class="d-only">Passe o mouse, escolha a modalidade</span><span class="m-only">Deslize, toque na modalidade</span> e comece a montar sua premiação.</p>
   </div>
   <div class="esp-wrap">
     <ul class="esp-list" id="espList"></ul>
     <div class="esp-stage-wrap"><div class="esp-stage"><div class="esp-frame" id="espFrame"></div><div class="esp-cap"><span id="espCap"></span><span id="espNum"></span></div></div></div>
   </div>
   <div class="esp-cards" id="espCards"></div>
+  <div class="xprog m-only" aria-hidden="true"><i></i></div>
 </section>
 
 <!-- 06 · EVENTOS ========================================================== -->
@@ -257,13 +276,13 @@
       <figure class="ev"><div class="cut"><img src="img/petkovic.webp" width="1000" height="1261" alt="Camisa 10 Petkovic com a marca Achei Troféus na Copa Fla" loading="lazy" decoding="async"></div><figcaption><b>Copa Fla</b><span>Parceira oficial</span></figcaption></figure>
       <figure class="ev"><div class="cut"><img src="img/cafu.webp" width="1000" height="1227" alt="Homenageado recebe um troféu dourado com a inscrição O Capitão" loading="lazy" decoding="async"></div><figcaption><b>O Capitão</b><span>Homenagem</span></figcaption></figure>
       <figure class="ev ev--w"><div class="cut"><img src="img/pesca.webp" width="1000" height="701" alt="Três pescadores com troféus da pesca esportiva" loading="lazy" decoding="async"></div><figcaption><b>Pesca esportiva</b><span>Campeão · 2º lugar</span></figcaption></figure>
-      <figure class="ev"><div class="cut"><img src="img/ligadelas.webp" width="1000" height="1261" alt="Troféus Liga Delas na areia: campeã, vice-campeã e 3º lugar" loading="lazy" decoding="async"></div><figcaption><b>Liga Delas</b><span>Futevôlei feminino</span></figcaption></figure>
+      <figure class="ev m-hide"><div class="cut"><img src="img/ligadelas.webp" width="1000" height="1261" alt="Troféus Liga Delas na areia: campeã, vice-campeã e 3º lugar" loading="lazy" decoding="async"></div><figcaption><b>Liga Delas</b><span>Futevôlei feminino</span></figcaption></figure>
     </div>
     <div class="evt-col" data-speed="-18">
       <figure class="ev"><div class="cut"><img src="img/premio.webp" width="1000" height="1261" alt="Discurso ao microfone com troféu na mão no Prêmio Sensação 2026" loading="lazy" decoding="async"></div><figcaption><b>Prêmio Sensação</b><span>2026</span></figcaption></figure>
-      <figure class="ev ev--w"><div class="cut"><img src="img/confut.webp" width="1000" height="823" alt="Troféus TimeForte com escudos de Flamengo, Internacional e Chelsea" loading="lazy" decoding="async"></div><figcaption><b>Confut Sudamericana</b><span>2026</span></figcaption></figure>
-      <figure class="ev"><div class="cut"><img src="img/truco.webp" width="1000" height="1137" alt="Dois campeões de truco com troféus de cartas" loading="lazy" decoding="async"></div><figcaption><b>Deu truco.</b><span>Deu vitória</span></figcaption></figure>
-      <figure class="ev"><div class="cut"><img src="img/judoca.webp" width="1000" height="1261" alt="Atleta de jiu-jitsu de quimono branco entrevistado" loading="lazy" decoding="async"></div><figcaption><b>Lutas</b><span>Na arena</span></figcaption></figure>
+      <figure class="ev ev--w"><div class="cut"><img src="img/confut.webp" width="1000" height="708" alt="Troféus TimeForte com escudos de Flamengo, Internacional e Chelsea" loading="lazy" decoding="async"></div><figcaption><b>Confut Sudamericana</b><span>2026</span></figcaption></figure>
+      <figure class="ev"><div class="cut"><img src="img/truco.webp" width="1000" height="1052" alt="Dois campeões de truco com troféus de cartas" loading="lazy" decoding="async"></div><figcaption><b>Deu truco.</b><span>Deu vitória</span></figcaption></figure>
+      <figure class="ev m-hide"><div class="cut"><img src="img/judoca.webp" width="1000" height="1261" alt="Atleta de jiu-jitsu de quimono branco entrevistado" loading="lazy" decoding="async"></div><figcaption><b>Lutas</b><span>Na arena</span></figcaption></figure>
     </div>
     <div class="evt-col" data-speed="12">
       <figure class="ev ev--w"><div class="cut"><img src="img/flacup.webp" width="1000" height="921" alt="Troféus Fla Cup Society com luva e chuteira" loading="lazy" decoding="async"></div><figcaption><b>Fla Cup Society</b><span>Campeão · Vice</span></figcaption></figure>
@@ -313,7 +332,7 @@
         <label><span>Cidade / UF</span><input type="text" name="cidade" autocomplete="address-level2" placeholder="Sua cidade — UF"></label>
       </div>
       <div class="bld-foot">
-        <button class="btn btn--ink mag" type="submit"><span>Pedir orçamento no WhatsApp</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></button>
+        <button class="btn btn--ink mag" type="submit"><span class="d-only">Pedir orçamento no WhatsApp</span><span class="m-only">Orçamento no WhatsApp</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></button>
         <span class="badge">Sem pedido mínimo</span>
       </div>
       <p class="bld-note">Abrimos o WhatsApp da Achei — (32) 9 9804-2012 — com a sua mensagem já escrita. É só enviar.</p>
@@ -346,7 +365,7 @@
         <li>CEO <a href="https://www.instagram.com/karuliny.t.r/" target="_blank" rel="noopener">@karuliny.t.r</a></li>
       </ul>
     </div>
-    <div>
+    <div class="m-hide">
       <h4>Navegar</h4>
       <ul>
         <li><a href="#anatomia">O troféu</a></li>

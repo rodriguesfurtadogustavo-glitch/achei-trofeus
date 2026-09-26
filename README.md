@@ -28,3 +28,11 @@ Para testar localmente: `python3 -m http.server` dentro da pasta e abra http://l
 - Substituir as fotos do Instagram por originais em alta resolução (a mesma diagramação aceita).
 - Se houver vídeo da fábrica (laser cortando), ele pode entrar no lugar de `laserbeam.webp`.
 - Logo: o símbolo no header é um desenho provisório; trocar pelo SVG oficial da marca.
+
+## Mobile (≤ 820px) — projetado à parte
+- Hero em coluna (palavra → produto → ação); "ETERNIZAMOS" em contorno e "CONQUISTAS." sólido.
+- Menu próprio (botão no header, painel revelado pelo laser, foco preso, Esc fecha, scroll travado).
+- Anatomia com desmontagem **vertical** e uma camada por vez; Fábrica e Esportes como carrosséis nativos com a linha de laser de progresso.
+- Coleção com 6 peças (sem repetir o hero e os esportes), Eventos com o número como manchete e 6 fotos.
+- Scroll nativo no toque (Lenis só com mouse); animações contínuas pausam fora da tela; grão desligado no celular.
+- Testado em 320×568, 360×800, 375×812, 390×844, 412×915, 430×932, 768×1024 e 844×390 (deitado), sem overflow horizontal.

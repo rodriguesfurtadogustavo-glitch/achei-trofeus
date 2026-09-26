@@ -7,6 +7,9 @@
   const $ = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => [...c.querySelectorAll(s)];
   const fine = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const MOB = '(max-width: 820px)';
+  const isMob = () => matchMedia(MOB).matches;
+  const touch = matchMedia('(pointer: coarse)').matches;
   const WA = '5532998042012';
 
   /* ------------------------------------------------------------------ dados */
@@ -42,7 +45,7 @@
   // Espessura física das camadas do troféu: cópias escuras atrás de cada camada
   $$('.lyr-in').forEach((inn) => {
     const main = inn.querySelector('img');
-    const n = inn.parentElement.dataset.l === '4' ? 1 : inn.parentElement.dataset.l === '2' ? 2 : 3;
+    const n = isMob() ? 1 : inn.parentElement.dataset.l === '4' ? 1 : inn.parentElement.dataset.l === '2' ? 2 : 3;
     for (let k = n; k >= 1; k--) {
       const g = main.cloneNode(); g.alt = ''; g.className = `g g${k}`; g.setAttribute('aria-hidden', 'true');
       inn.insertBefore(g, main);
@@ -60,6 +63,60 @@
     const set = () => el.style.setProperty('--mask', `url("${img.currentSrc || img.src}")`);
     img.complete ? set() : img.addEventListener('load', set, { once: true });
   });
+
+  /* ----------------------------------------------------------- menu mobile */
+  const menuBtn = $('#menuBtn'), mnav = $('#mnav'), body = document.body;
+  let menuOpen = false, lockY = 0;
+  const setMenu = (open) => {
+    if (open === menuOpen) return;
+    menuOpen = open;
+    H.classList.toggle('is-menu', open);
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+    mnav.inert = !open;
+    if (open) {
+      lockY = scrollY;
+      Object.assign(body.style, { position: 'fixed', top: `${-lockY}px`, left: '0', right: '0' });
+      if (window.__lenis) window.__lenis.stop();
+      setTimeout(() => { const a = $('a', mnav); if (a && menuOpen) a.focus({ preventScroll: true }); }, 380);
+    } else {
+      Object.assign(body.style, { position: '', top: '', left: '', right: '' });
+      window.scrollTo(0, lockY);
+      if (window.__lenis) window.__lenis.start();
+    }
+  };
+  menuBtn.addEventListener('click', () => setMenu(!menuOpen));
+  $$('a', mnav).forEach((a) => a.addEventListener('click', () => setMenu(false)));
+  addEventListener('keydown', (e) => {
+    if (!menuOpen) return;
+    if (e.key === 'Escape') { setMenu(false); menuBtn.focus(); return; }
+    if (e.key !== 'Tab') return;
+    const f = [menuBtn, ...$$('a', mnav)];
+    const i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+  });
+  addEventListener('resize', () => { if (menuOpen && innerWidth > 1100) setMenu(false); });
+
+  // Carrosséis nativos: a linha de laser acompanha o gesto
+  const hprog = (scroller, bar) => {
+    if (!scroller || !bar) return;
+    const upd = () => {
+      const max = scroller.scrollWidth - scroller.clientWidth;
+      bar.style.setProperty('--p', max > 0 ? Math.max(.1, scroller.scrollLeft / max).toFixed(3) : 1);
+    };
+    scroller.addEventListener('scroll', upd, { passive: true });
+    addEventListener('resize', upd);
+    upd();
+  };
+  hprog($('#espCards'), $('.esp .xprog'));
+  hprog($('.fab-track'), $('.fab-progress'));
+
+  // Animações contínuas só rodam quando estão na tela
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('is-off', !e.isIntersecting)));
+    $$('.marquee, .fab-band').forEach((el) => io.observe(el));
+  }
 
   /* ------------------------------------------------------- orçamento → WA */
   const form = $('#bld');
@@ -179,11 +236,14 @@
 
   gsap.registerPlugin(ScrollTrigger);
   gsap.defaults({ ease: 'expo.out' });
+  ScrollTrigger.config({ ignoreMobileResize: true });
 
   /* ---------------------------------------------------------------- Lenis */
+  // No toque, o scroll é o do sistema: nada de inércia artificial
   let lenis = null;
-  if (window.Lenis) {
+  if (window.Lenis && !touch) {
     lenis = new Lenis({ lerp: .09, smoothWheel: true });
+    window.__lenis = lenis;
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add((t) => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
@@ -197,7 +257,7 @@
   }));
 
   /* ----------------------------------------------------- revelação laser */
-  const laser = (el, d = 0, dur = 1.5) => {
+  const laser = (el, d = 0, dur = isMob() ? 1.05 : 1.5) => {
     gsap.fromTo(el, { '--c': 0 }, { '--c': 100, duration: dur, delay: d, ease: 'expo.inOut' });
     gsap.fromTo(el, { '--lz': 1 }, { '--lz': 0, duration: .45, delay: d + dur * .72, ease: 'power1.out' });
   };
@@ -215,12 +275,13 @@
     } });
   });
   const autoCuts = $$('.cut').filter((c) => !c.closest('.cq, .esp-frame, .fab-track, .sup-h'));
-  autoCuts.forEach((c) => ScrollTrigger.create({ trigger: c, start: 'top 88%', once: true, onEnter: () => laser(c) }));
+  autoCuts.forEach((c) => ScrollTrigger.create({ trigger: c, start: isMob() ? 'top 96%' : 'top 88%', once: true, onEnter: () => laser(c) }));
 
   /* ------------------------------------------------------------- entrada */
   const heroLines = $$('.hero-h .ln > span');
   gsap.set(heroLines, { y: 0, yPercent: 108 });
   const intro = gsap.timeline();
+  if (isMob()) intro.timeScale(1.25);
   if (lenis) lenis.stop();
   intro
     .to('.intro-mark', { opacity: .7, duration: .7 }, .1)
@@ -266,7 +327,7 @@
 
   /* ---------------------------------------------- cenas por breakpoint */
   const mm = gsap.matchMedia();
-  mm.add({ desk: '(min-width: 821px)', mob: '(max-width: 820px)' }, (ctx) => {
+  mm.add({ desk: '(min-width: 821px)', mob: MOB }, (ctx) => {
     const { desk } = ctx.conditions;
     const vh = () => innerHeight / 100;
 
@@ -277,8 +338,8 @@
       .to('.hero-h .w1', { xPercent: -14, autoAlpha: 0, duration: .55 }, 0)
       .to('.hero-h .w2', { xPercent: -22, autoAlpha: 0, duration: .55 }, .06)
       .to(['.hero-eyebrow', '.hero-foot', '.scroll-cue'], { autoAlpha: 0, y: -30, duration: .35 }, 0)
-      .to(obj, { x: toCenter, scale: desk ? 1.16 : 1.06, duration: .7, ease: 'power2.inOut' }, 0)
-      .to(obj, { y: () => -10 * vh(), scale: desk ? 1.26 : 1.12, duration: .3, ease: 'power1.in' }, .7)
+      .to(obj, { x: toCenter, scale: desk ? 1.16 : 1.05, duration: .7, ease: 'power2.inOut' }, 0)
+      .to(obj, { y: () => (desk ? -10 : -5) * vh(), scale: desk ? 1.26 : 1.09, duration: .3, ease: 'power1.in' }, .7)
       .to('.refl', { autoAlpha: 0, duration: .3 }, .6);
 
     /* 01 · CONQUISTA — a chegada passa, a conquista fica */
@@ -289,30 +350,39 @@
       onEnter: () => gsap.to(cqA, { yPercent: 0, duration: 1.4, stagger: .1 }) });
     const cq = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: '.cq', start: 'top top', end: 'bottom bottom', scrub: .7, invalidateOnRefresh: true } });
     $$('.cq-ph').forEach((ph) => {
-      let [y0, y1] = ph.dataset.y.split(',').map(Number);
-      if (!desk) { y0 *= .9; y1 *= .9; }
+      const [y0, y1] = (desk ? ph.dataset.y : ph.dataset.ym).split(',').map(Number);
       cq.fromTo(ph, { y: () => y0 * vh() }, { y: () => y1 * vh(), duration: 1 }, 0);
       const tIn = (y0 - 96) / (y0 - y1);
-      const cut = $('.cut', ph);
+      const cut = $('.cut', ph), cap = $('figcaption', ph);
+      gsap.set(cap, { autoAlpha: 0 });
       if (tIn <= 0) {
-        ScrollTrigger.create({ trigger: '.cq', start: 'top 45%', once: true, onEnter: () => laser(cut, .1, 1.3) });
+        ScrollTrigger.create({ trigger: '.cq', start: 'top 45%', once: true, onEnter: () => {
+          laser(cut, .1, desk ? 1.3 : 1);
+          gsap.to(cap, { autoAlpha: .6, duration: .6, delay: desk ? 1.1 : .8 });
+        } });
       } else {
-        cq.fromTo(cut, { '--c': 0 }, { '--c': 100, duration: .09, ease: 'power2.inOut' }, tIn);
-        cq.fromTo(cut, { '--lz': 1 }, { '--lz': 0, duration: .03 }, tIn + .075);
+        cq.fromTo(cut, { '--c': 0 }, { '--c': 100, duration: desk ? .09 : .06, ease: 'power2.inOut' }, tIn);
+        cq.fromTo(cut, { '--lz': 1 }, { '--lz': 0, duration: .03 }, tIn + (desk ? .075 : .05));
+        cq.to(cap, { autoAlpha: .6, duration: .03 }, tIn + (desk ? .08 : .055));
       }
     });
-    cq.to('.cq-a', { y: () => -26 * vh(), autoAlpha: 0, duration: .2, ease: 'power1.in' }, .3)
+    if (desk) cq.to('.cq-a', { y: () => -26 * vh(), autoAlpha: 0, duration: .2, ease: 'power1.in' }, .3);
+    else cq.to('.cq-a', { y: () => -12 * vh(), duration: .2, ease: 'power1.in' }, .3).to('.cq-a', { autoAlpha: 0, duration: .1 }, .3);
+    cq
       .to(cqB, { yPercent: 0, duration: .14, stagger: .03, ease: 'power3.out' }, .44)
       .to('.cq-sub', { autoAlpha: .8, y: 0, duration: .1 }, .58)
       .set({}, {}, 1);
 
     /* 02 · ANATOMIA — o troféu se desmonta em camadas reais */
     const an = $('.an'), rig = $('.an-rig'), L = $$('.lyr'), steps = $$('.an-steps li');
-    const Z = desk ? [-240, -80, 125, 35, 225] : [-130, -45, 70, 20, 125];
-    const Y = [0, 0, 0, 8, 13];
+    // Desktop: explosão em profundidade. Celular: explosão vertical, que cabe no retrato.
+    const Z = desk ? [-240, -80, 125, 35, 225] : [-60, 0, 90, 10, 80];
+    const Y = desk ? [0, 0, 0, 8, 13] : [-14, -5, 0, 11, 18];
+    const S0 = desk ? .3 : .24, S1 = desk ? .86 : .84;
     let step = -2;
     const setStep = (p) => {
-      const i = p >= .3 && p < .86 ? Math.min(4, Math.floor((p - .3) / (.56 / 5))) : -1;
+      an.classList.toggle('is-past', p >= S0);
+      const i = p >= S0 && p < S1 ? Math.min(4, Math.floor((p - S0) / ((S1 - S0) / 5))) : -1;
       if (i === step) return;
       step = i;
       an.classList.toggle('is-steps', i >= 0);
@@ -322,13 +392,13 @@
     const sheen2 = $('.lyr[data-l="1"] .sheen');
     const at = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: an, start: 'top top', end: 'bottom bottom', scrub: .9,
       onUpdate: (s) => { setStep(s.progress); an.classList.toggle('is-end', s.progress > .9); } } });
-    at.fromTo(rig, { rotationY: 0, rotationX: 0, scale: .92 }, { rotationY: desk ? -34 : -26, rotationX: 9, scale: 1, duration: .2, ease: 'power2.inOut' }, .05)
+    at.fromTo(rig, { rotationY: 0, rotationX: 0, scale: .92 }, { rotationY: desk ? -34 : -14, rotationX: desk ? 9 : 16, scale: 1, duration: desk ? .2 : .17, ease: 'power2.inOut' }, .05)
       .to('.an-grid', { opacity: 1, duration: .15 }, .1)
       .fromTo(sheen2, { '--sp': '-20%' }, { '--sp': '120%', duration: .25 }, .05);
-    L.forEach((l, i) => at.to(l, { z: Z[i], yPercent: Y[i], duration: .2, ease: 'power2.inOut' }, .09 + i * .01));
-    at.to(rig, { rotationY: desk ? -18 : -14, rotationX: 5, duration: .55 }, .3)
-      .to(L, { z: 0, yPercent: 0, duration: .1, ease: 'power2.inOut' }, .86)
-      .to(rig, { rotationY: 0, rotationX: 0, duration: .1, ease: 'power2.inOut' }, .86)
+    L.forEach((l, i) => at.to(l, { z: Z[i], yPercent: Y[i], duration: desk ? .2 : .15, ease: 'power2.inOut' }, (desk ? .09 : .07) + i * .01));
+    at.to(rig, { rotationY: desk ? -18 : -8, rotationX: desk ? 5 : 12, duration: S1 - S0 }, S0)
+      .to(L, { z: 0, yPercent: 0, duration: .1, ease: 'power2.inOut' }, S1)
+      .to(rig, { rotationY: 0, rotationX: 0, duration: .1, ease: 'power2.inOut' }, S1)
       .to('.an-grid', { opacity: 0, duration: .08 }, .88)
       .fromTo(sheen2, { '--sp': '-20%' }, { '--sp': '120%', duration: .1 }, .9)
       .set({}, {}, 1);
@@ -355,7 +425,11 @@
         scrollTrigger: { trigger: n.parentElement, containerAnimation: move, start: 'left right', end: 'right left', scrub: true } }));
       ctx.add(() => () => { ScrollTrigger.removeEventListener('refreshInit', size); fh.style.height = ''; });
     } else {
-      frames.forEach((c) => ScrollTrigger.create({ trigger: c, start: 'top 88%', once: true, onEnter: () => laser(c) }));
+      // Carrossel nativo: o primeiro par é cortado a laser ao entrar; o resto já espera pronto fora da tela
+      frames.forEach((c, k) => {
+        if (k < 2) ScrollTrigger.create({ trigger: track, start: 'top 88%', once: true, onEnter: () => laser(c, k * .14) });
+        else c.style.setProperty('--c', 100);
+      });
     }
 
     /* 04 · COLEÇÃO e 06 · EVENTOS — profundidade discreta */
@@ -363,26 +437,36 @@
       $$('.pc[data-speed]').forEach((el) => gsap.fromTo(el, { y: () => +el.dataset.speed * vh() }, { y: () => -el.dataset.speed * vh(), ease: 'none',
         scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true } }));
     }
-    $$('.evt-col').forEach((col) => {
-      const s = +col.dataset.speed * (desk ? 1 : .5);
-      if (!s) return;
-      gsap.fromTo(col, { y: 0 }, { y: () => s * vh() * 3, ease: 'none',
-        scrollTrigger: { trigger: '.evt-cols', start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true } });
-    });
-    gsap.fromTo('.evt-num', { scale: .86 }, { scale: 1.06, ease: 'none', scrollTrigger: { trigger: '.evt', start: 'top bottom', end: 'bottom top', scrub: true } });
+    if (desk) {
+      $$('.evt-col').forEach((col) => {
+        const s = +col.dataset.speed;
+        if (!s) return;
+        gsap.fromTo(col, { y: 0 }, { y: () => s * vh() * 3, ease: 'none',
+          scrollTrigger: { trigger: '.evt-cols', start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true } });
+      });
+      gsap.fromTo('.evt-num', { scale: .86 }, { scale: 1.06, ease: 'none', scrollTrigger: { trigger: '.evt', start: 'top bottom', end: 'bottom top', scrub: true } });
+    } else {
+      gsap.from('.evt-num', { yPercent: 30, autoAlpha: 0, duration: 1.4, scrollTrigger: { trigger: '.evt-back', start: 'top 80%', once: true } });
+    }
 
     /* 07 · ORÇAMENTO — o troféu sobe para o palco */
-    gsap.from('.cta-obj .stage', { yPercent: 18, autoAlpha: 0, duration: 1.8, scrollTrigger: { trigger: '.cta', start: 'top 60%', once: true } });
+    gsap.from('.cta-obj .stage', { yPercent: 18, autoAlpha: 0, duration: desk ? 1.8 : 1.3, scrollTrigger: { trigger: desk ? '.cta' : '.cta-obj', start: desk ? 'top 60%' : 'top 90%', once: true } });
 
     /* Esportes (mobile): cartões entram com o mesmo corte */
-    if (!desk) gsap.from('.ec', { autoAlpha: 0, x: 40, duration: 1.2, stagger: .08, scrollTrigger: { trigger: '#espCards', start: 'top 85%', once: true } });
+    if (!desk) gsap.from($$('.ec').slice(0, 3), { autoAlpha: 0, x: 40, duration: 1.1, stagger: .08, clearProps: 'transform', scrollTrigger: { trigger: '#espCards', start: 'top 90%', once: true } });
 
     /* Toque: o brilho do hero varre sozinho */
     if (!fine()) {
-      gsap.fromTo('.hero-obj .sheen', { '--mx': '10%', '--my': '15%' }, { '--mx': '90%', '--my': '60%', duration: 3.6, ease: 'sine.inOut', repeat: -1, yoyo: true });
-      $$('.cta-obj .sheen, .pers-obj .sheen').forEach((s) => gsap.fromTo(s, { '--mx': '0%', '--my': '20%' }, { '--mx': '100%', '--my': '70%', duration: 4, ease: 'sine.inOut', repeat: -1, yoyo: true }));
+      const sweep = (sel, trigger, from, to, dur) => {
+        const tw = gsap.fromTo(sel, from, { ...to, duration: dur, ease: 'sine.inOut', repeat: -1, yoyo: true, paused: true });
+        ScrollTrigger.create({ trigger, start: 'top bottom', end: 'bottom top', onToggle: (s) => (s.isActive ? tw.play() : tw.pause()) });
+      };
+      sweep('.hero-obj .sheen', '.hero', { '--mx': '10%', '--my': '15%' }, { '--mx': '90%', '--my': '60%' }, 3.6);
+      sweep('.pers-obj .sheen', '.pers-obj', { '--mx': '0%', '--my': '20%' }, { '--mx': '100%', '--my': '70%' }, 4);
+      sweep('.cta-obj .sheen', '.cta-obj', { '--mx': '0%', '--my': '20%' }, { '--mx': '100%', '--my': '70%' }, 4);
     }
   });
 
   addEventListener('load', () => ScrollTrigger.refresh());
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
 })();
