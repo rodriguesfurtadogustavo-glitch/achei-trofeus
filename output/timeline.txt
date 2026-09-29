@@ -1,0 +1,42 @@
+REEL ACHEI TROFÉUS — TIMELINE FINAL
+1080x1920 · 30 fps · 22,367 s (671 quadros)
+Tempos de saída em mm:ss.mmm. "crop" = nível de enquadramento relativo ao plano normal
+(100% = rosto ~23–28% da largura, olhos perto do terço superior); entre parênteses, a escala real sobre o quadro original.
+
+00:00.000–00:01.767 | IMG_2117 20.500–22.267 | Hook: "A semana vai ser incrível." | crop 112% (1,25×) | corte final no piscar, 2 quadros de L-cut sobre o "A" seguinte
+00:01.767–00:03.700 | IMG_2117 11.167–13.100 | Desenvolvimento: "A Achei Troféus está aqui em São Paulo" | crop 100% (1,10×) | áudio entra em 00:01.700 (J-cut de 2 quadros)
+00:02.860–00:04.300 | —                        | Tipografia "SÃO PAULO." (Anton, terço superior) | sobreposição | sincronizada com "São" (00:02.913)
+00:03.700–00:06.333 | IMG_2117 13.100–15.733 | Desenvolvimento: "pra buscar conhecimento de gestão," | crop 108% (1,22×) | corte na pausa depois de "São Paulo"
+00:06.333–00:08.700 | IMG_2117 15.733–18.100 | Desenvolvimento: "pra elevar cada vez mais a Achei Troféus," | crop 100% (1,12×; linha dos olhos em 33,5% para tirar do quadro uma placa vermelha de parede) | corte na pausa depois de "gestão"
+00:08.700–00:12.467 | IMG_2123 3.913–7.850   | B-roll caminhando em direção à câmera | crop 106% + reenquadramento horizontal; rampa 1,12×→1,00× | áudio continua de IMG_2117 18.100–20.480 + 22.200–23.567
+00:11.090           | (áudio)                  | Corte de fala escondido sob o B-roll: "...pra vocês." | "A partir de quinta-feira..." | crossfade 12 ms
+00:12.467–00:13.833 | IMG_2117 23.567–24.933 | Anúncio: "nós vamos estar na" | crop 100% (1,14×) | volta do B-roll com olhos abertos (depois do piscar em 23,37–23,53)
+00:13.833–00:16.900 | IMG_2117 24.933–28.000 | Anúncio: "maior feira olímpica da América Latina." | crop 112% → 120% (1,26×→1,36×, push-in lento) | punch-in exatamente em "maior" (palavra em vermelho)
+00:16.900–00:20.433 | IMG_2117 28.000–31.533 | "E lá a gente vai buscar muito mais conteúdo e fazer muita parceria." | crop 100% (1,20×) | corte no início de "E lá"
+00:20.433–00:22.367 | IMG_2117 31.533–33.467 | Fechamento: "Aguardo mostrar tudo pra vocês." | crop 108% (1,28×→1,16×, compensando parte do avanço real da câmera) | entra no gesto de apontar; termina no sorriso, antes da câmera avançar
+
+ÁUDIO (voz, todo de IMG_2117)
+00:00.000–00:01.700 | IMG_2117 20.50–22.20 | "A semana vai ser incrível."
+00:01.700–00:11.090 | IMG_2117 11.09–20.48 | "A Achei Troféus ... pra vocês."
+00:11.090–00:22.367 | IMG_2117 22.20–33.47 | "A partir de quinta-feira ... pra vocês." (+7 ms de silêncio para fechar 671 quadros)
+00:08.700–00:12.467 | IMG_2123 3.913–7.850 | som direto do corredor (passos) muito baixo, com fades de 150 ms
+
+LEGENDAS (entrada → saída; tempos alinhados à grade de quadros)
+00:00.000–00:01.760 | A semana vai ser / [incrível.]
+00:01.760–00:03.060 | A Achei Troféus / está aqui
+00:02.860–00:04.300 | SÃO PAULO.  (tipografia; substitui a legenda de "em São Paulo")
+00:03.700–00:05.400 | pra buscar / conhecimento
+00:05.400–00:06.330 | de [gestão,]
+00:06.330–00:07.560 | pra elevar cada / vez mais
+00:07.560–00:08.700 | a Achei Troféus,
+00:08.700–00:09.600 | levar muito / produto
+00:09.600–00:11.030 | de [qualidade] / pra vocês.
+00:11.030–00:12.260 | A partir de / quinta-feira,
+00:12.260–00:13.830 | nós vamos / estar na
+00:13.830–00:15.560 | [maior] feira / olímpica
+00:15.560–00:16.900 | da América / Latina.
+00:16.900–00:18.030 | E lá a gente / vai buscar
+00:18.030–00:18.900 | muito mais / conteúdo
+00:18.900–00:20.430 | e fazer muita / [parceria.]
+00:20.430–00:22.360 | Aguardo mostrar / [tudo] pra vocês.
+[ ] = palavra em vermelho
