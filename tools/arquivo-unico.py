@@ -1,5 +1,5 @@
 # Gera versões de arquivo único (estilos, scripts, fontes e fotos embutidos)
-# de index.html e catalogo.html. Uso: python3 tools/arquivo-unico.py [pasta]
+# de index.html (site completo, com o catálogo). Uso: python3 tools/arquivo-unico.py [pasta]
 import base64, io, json, os, re, sys
 from PIL import Image
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,4 +42,4 @@ def build(name):
     open(f'{OUT}/{name}', 'w').write(s)
     left = re.findall(r'(?:src|href)="((?:img|css|js|fonts)/[^"]+)"', s)
     print(name, f'{len(s)/1e6:.1f} MB', 'refs externas restantes:', left)
-build('index.html'); build('catalogo.html')
+build('index.html')

@@ -87,45 +87,34 @@
     return { modelos, pecas, valor };
   };
 
-  /* ------------------------------------------------------------- header */
+  /* ------------------------------------------------------------- página */
+  // O catálogo é um capítulo do site: o header, o menu e a rolagem (Lenis)
+  // são do site.js. Aqui só acompanhamos a altura do header para a barra.
   const hd = $('#hd');
+  const lenis = () => window.__lenis || null;
+  const irPara = (y) => {
+    if (lenis()) lenis().scrollTo(y, { duration: RM ? 0 : 1.2 });
+    else scrollTo({ top: y, behavior: RM ? 'auto' : 'smooth' });
+  };
   const setHdh = () => H.style.setProperty('--hdh', `${hd.offsetHeight}px`);
   setHdh();
   addEventListener('resize', setHdh);
   const onScroll = () => {
-    hd.classList.toggle('is-solid', scrollY > 30);
     const bar = $('#bar');
     bar.classList.toggle('is-stuck', bar.getBoundingClientRect().top <= hd.offsetHeight + 1);
   };
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+  // ScrollTrigger recalcula as cenas de baixo quando a grade muda de altura
+  const refreshST = () => { if (window.ScrollTrigger) window.ScrollTrigger.refresh(); };
 
-  // Menu mobile (mesmo comportamento do site)
-  const menuBtn = $('#menuBtn'), mnav = $('#mnav');
-  let menuOpen = false, lockY = 0;
-  const setMenu = (open) => {
-    if (open === menuOpen) return;
-    menuOpen = open;
-    H.classList.toggle('is-menu', open);
-    menuBtn.setAttribute('aria-expanded', String(open));
-    menuBtn.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
-    mnav.inert = !open;
-    if (open) {
-      lockY = scrollY;
-      Object.assign(document.body.style, { position: 'fixed', top: `${-lockY}px`, left: '0', right: '0' });
-    } else {
-      Object.assign(document.body.style, { position: '', top: '', left: '', right: '' });
-      scrollTo(0, lockY);
-    }
-  };
-  menuBtn.addEventListener('click', () => setMenu(!menuOpen));
-  $$('a', mnav).forEach((a) => a.addEventListener('click', () => setMenu(false)));
-  addEventListener('resize', () => { if (menuOpen && innerWidth > 1100) setMenu(false); });
-
-  // Entrada do hero
-  const ready = () => requestAnimationFrame(() => H.classList.add('is-ready'));
-  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(ready);
-  setTimeout(ready, 1200);
+  // Entrada do pódio quando o capítulo chega na tela
+  const ready = () => H.classList.add('is-ready');
+  if (RM || !('IntersectionObserver' in window)) ready();
+  else {
+    const cio = new IntersectionObserver((e) => { if (e[0].isIntersecting) { ready(); cio.disconnect(); } }, { threshold: 0.25 });
+    cio.observe($('.ch'));
+  }
   $$('[data-total]').forEach((el) => { el.textContent = prods.length; });
 
   // Títulos que sobem com a máscara (mesma linguagem do site)
@@ -251,6 +240,7 @@
     grid.innerHTML = html;
     $('#empty').hidden = r.length > 0;
     if (io) $$('.rv-it', grid).forEach((el) => io.observe(el));
+    refreshST();
     marcarCards();
 
     // contagem
@@ -280,7 +270,7 @@
   const topoBarra = () => $('.idx').getBoundingClientRect().bottom + scrollY - hd.offsetHeight;
   const topoAcervo = (sempre) => {
     const y = topoBarra();
-    if (sempre || scrollY > y) scrollTo({ top: y, behavior: RM ? 'auto' : 'smooth' });
+    if (sempre || scrollY > y) irPara(y);
   };
   const setCat = (c, rolar = true) => {
     st.cat = c; st.sub = '';
@@ -291,6 +281,14 @@
   };
 
   tabs.addEventListener('click', (e) => { const t = e.target.closest('.tab'); if (t) setCat(t.dataset.cat); });
+  // Links do site (capítulo Esportes) que já abrem uma coleção
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('[data-goto-cat]');
+    if (!a) return;
+    e.preventDefault(); e.stopPropagation();
+    setCat(a.dataset.gotoCat, false);
+    topoAcervo(true);
+  }, true);
   subs.addEventListener('click', (e) => { const b = e.target.closest('.sub'); if (b) { st.sub = b.dataset.sub; render(); } });
   grid.addEventListener('click', (e) => {
     const g = e.target.closest('.grp-go');
@@ -319,6 +317,7 @@
     if (d.open) return;
     d.showModal();
     H.classList.add('is-locked');
+    if (lenis()) lenis().stop();
     requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add('is-open')));
   };
   const fechar = (d) => {
@@ -328,7 +327,7 @@
     setTimeout(() => {
       d.close();
       delete d.dataset.closing;
-      if (!qv.open && !dr.open) H.classList.remove('is-locked');
+      if (!qv.open && !dr.open) { H.classList.remove('is-locked'); if (lenis()) lenis().start(); }
       if (d === qv && location.hash.startsWith('#p=')) history.replaceState(null, '', location.pathname + location.search);
       sync();
     }, RM ? 0 : 420);
@@ -457,7 +456,7 @@
   const ul = $('#lines');
   const evento = Object.assign({ nome: '', evento: '', data: '', cidade: '', uf: '', pais: '', msg: '' }, store.get(CFG.chaveEvento, {}));
   if (evento.obs && !evento.msg) { evento.msg = evento.obs; delete evento.obs; }
-  $$('#evt [name]').forEach((f) => {
+  $$('#ent [name]').forEach((f) => {
     f.value = evento[f.name] || '';
     f.addEventListener('input', () => { evento[f.name] = f.value; store.set(CFG.chaveEvento, evento); atualizarEnvio(); });
   });
@@ -576,7 +575,7 @@
     const b = e.target.closest('[data-open-list]');
     if (!b) return;
     e.preventDefault();
-    if (menuOpen) setMenu(false);
+    if (H.classList.contains('is-menu')) $('#menuBtn').click();
     abrirLista();
   });
 
@@ -692,6 +691,7 @@
     $$('[data-count]').forEach((el) => { el.textContent = t.modelos; });
     $$('.list-btn').forEach((b) => b.classList.toggle('has-items', t.modelos > 0));
     dock.hidden = false;
+    H.classList.toggle('has-list', t.modelos > 0);
     dock.classList.toggle('is-on', t.modelos > 0 && !dr.open && !qv.open);
     $('#dockSum').textContent = t.modelos ? `${plural(t.modelos, 'modelo', 'modelos')} · ${plural(t.pecas, 'peça', 'peças')}` : '';
     marcarCards();
@@ -709,7 +709,6 @@
     clearTimeout(tt); tt = setTimeout(() => toastEl.classList.remove('is-on'), 2600);
   };
 
-  $$('[data-top]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' }); }));
 
   /* ------------------------------------------------------------- início */
   render();

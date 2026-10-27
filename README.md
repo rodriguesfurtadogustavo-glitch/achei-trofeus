@@ -6,7 +6,8 @@ Para testar localmente: `python3 -m http.server` dentro da pasta e abra http://l
 
 ## Estrutura
 - `index.html` — página única, 8 capítulos (00 Hero → 07 Orçamento).
-- `catalogo.html` — catálogo completo com lista de orçamento (ver seção abaixo).
+- O catálogo é o capítulo 06 de `index.html` (`#catalogo`). `catalogo.html` só redireciona para lá,
+  para não quebrar links antigos (inclusive listas compartilhadas).
 - `css/site.css` — todo o design system (tokens no `:root`).
 - `css/fonts.css` + `fonts/` — Anton, Instrument Serif e Inter Tight hospedadas localmente.
 - `js/site.js` — direção de movimento (cenas, revelação a laser, hover, orçamento).
@@ -38,7 +39,7 @@ Para testar localmente: `python3 -m http.server` dentro da pasta e abra http://l
 - Scroll nativo no toque (Lenis só com mouse); animações contínuas pausam fora da tela; grão desligado no celular.
 - Testado em 320×568, 360×800, 375×812, 390×844, 412×915, 430×932, 768×1024 e 844×390 (deitado), sem overflow horizontal.
 
-## Catálogo + lista de orçamento (`catalogo.html`)
+## Catálogo + lista de orçamento (capítulo 06 de `index.html`)
 - **258 modelos** transcritos dos 10 catálogos em PDF (Futebol/Futsal, Beach Tennis, Vôlei, Medalhas,
   Coleção 2025 — Exclusivos, Padel, Ciclismo/MTB, Pescaria, Poker/Baralho, Peteca/Kart/Sinuca), com código,
   todas as medidas e o preço de cada medida. Fotos recortadas dos PDFs em `img/catalogo/` (WebP 4:5).
@@ -51,7 +52,7 @@ Para testar localmente: `python3 -m http.server` dentro da pasta e abra http://l
 - A lista fica salva no navegador (localStorage); fechar a página não perde nada.
 - **Preços**: aparecem como "valor de referência da tabela". Para um catálogo só de orçamento, troque
   `mostrarPrecos: true` por `false` no topo de `js/catalogo.js` — todos os valores somem da página e da mensagem.
-- Links úteis: `catalogo.html?c=beach` abre uma coleção; `?q=volei011` já busca; `#p=futebol-brasil` abre a ficha.
+- Links úteis: `index.html?c=beach#catalogo` abre uma coleção; `?q=volei011#catalogo` já busca; `#p=futebol-brasil` abre a ficha.
 - **Conferência**: nomes e códigos foram lidos nas etiquetas de cada foto (MOD. … e #código). Pontos para a
   Achei revisar no catálogo impresso: Beach Tennis repete #beachtennis060 (Marabá e Blumenau); Vôlei repete
   #volei031 (San Diego e Orlando); Pesca 5 e Pesca 12 não têm código; Peteca/Kart/Sinuca traz o código
@@ -59,6 +60,6 @@ Para testar localmente: `python3 -m http.server` dentro da pasta e abra http://l
   Beach Tennis (ignoradas).
 
 ## Versão em arquivo único
-`python3 tools/arquivo-unico.py` gera `oficial/index.html` e `oficial/catalogo.html` com estilos, scripts,
-fontes e fotos embutidos (as fotos do catálogo são reduzidas para 360×450). Cada arquivo abre sozinho, sem
-pastas e sem internet; mantenha os dois juntos para os links entre site e catálogo funcionarem.
+`python3 tools/arquivo-unico.py` gera `oficial/index.html`: o site completo, com o catálogo, num único arquivo
+(estilos, scripts, fontes e fotos embutidos; as fotos do catálogo são reduzidas para 360×450). Abre sozinho,
+sem pastas e sem internet (o WhatsApp precisa de internet, claro).

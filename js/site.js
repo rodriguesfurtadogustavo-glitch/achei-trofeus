@@ -32,13 +32,14 @@
   const list = $('#espList'), frame = $('#espFrame'), cards = $('#espCards'), chipsSport = $('#bldSport');
   SPORTS.forEach((s, i) => {
     // Esportes com coleção própria abrem direto no catálogo; os demais vão para o orçamento
-    const href = s.cat ? `catalogo.html?c=${s.cat}` : '#orcamento';
+    const href = s.cat ? '#catalogo' : '#orcamento';
+    const goto = s.cat ? ` data-goto-cat="${s.cat}"` : '';
     list.insertAdjacentHTML('beforeend',
-      `<li><a class="esp-item" href="${href}" data-i="${i}" data-sport="${s.n}"><span class="n">${pad(i)}</span><span class="t">${s.n}</span><span class="go">${s.cat ? 'Ver modelos' : 'Montar premiação'}</span></a></li>`);
+      `<li><a class="esp-item" href="${href}"${goto} data-i="${i}" data-sport="${s.n}"><span class="n">${pad(i)}</span><span class="t">${s.n}</span><span class="go">${s.cat ? 'Ver modelos' : 'Montar premiação'}</span></a></li>`);
     frame.insertAdjacentHTML('beforeend',
       `<div class="cut${s.obj ? ' is-obj' : ''}" data-i="${i}"><img src="${s.img}" alt="${s.n} — ${s.cap}" loading="lazy" decoding="async"></div>`);
     cards.insertAdjacentHTML('beforeend',
-      `<a class="ec" href="${href}" data-sport="${s.n}"><div class="ph"><img class="${s.obj ? 'is-obj' : ''}" src="${s.img}" alt="${s.n} — ${s.cap}" loading="lazy" decoding="async"><b><small>${pad(i)}</small>${s.n}</b></div><p><span>${s.cap}</span>${s.cat ? 'Ver modelos' : 'Montar'} →</p></a>`);
+      `<a class="ec" href="${href}"${goto} data-sport="${s.n}"><div class="ph"><img class="${s.obj ? 'is-obj' : ''}" src="${s.img}" alt="${s.n} — ${s.cap}" loading="lazy" decoding="async"><b><small>${pad(i)}</small>${s.n}</b></div><p><span>${s.cap}</span>${s.cat ? 'Ver modelos' : 'Montar'} →</p></a>`);
     chipsSport.insertAdjacentHTML('beforeend',
       `<label class="chip"><input type="radio" name="esporte" value="${s.n}"><span>${s.n}</span></label>`);
   });

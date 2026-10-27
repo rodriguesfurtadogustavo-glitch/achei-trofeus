@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Achei Troféus — Eternizamos conquistas</title>
-<meta name="description" content="Troféus e medalhas personalizadas. Mais de 20 mil eventos premiados em todo o Brasil. Peça seu orçamento.">
+<meta name="description" content="Troféus e medalhas personalizadas. Catálogo com 258 modelos: escolha medidas e quantidades e peça o orçamento direto no WhatsApp. Mais de 20 mil eventos premiados em todo o Brasil.">
 <meta name="theme-color" content="#0b0a09">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23d21f2d'/%3E%3Cpath d='M13.6 9.6h12.8v6.6a6.4 6.4 0 0 1-12.8 0z M14.6 28.2h10.8v2.6H14.6z' fill='%23fff'/%3E%3Cpath d='M20 22.6v4.6' stroke='%23fff' stroke-width='2.4'/%3E%3C/svg%3E">
 <link rel="preload" href="fonts/Anton-latin-a6f395.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/InterTight-latin-1bf6b3.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/catalogo.css">
 <script>
   (function (d) {
     var h = d.documentElement;
@@ -23,6 +24,14 @@
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="arr" viewBox="0 0 16 16"><path d="M3.5 12.5 12.5 3.5M5.5 3.5h7v7" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 16 16"><path d="M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+  <symbol id="i-x" viewBox="0 0 16 16"><path d="m3.5 3.5 9 9m0-9-9 9" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m10.4 10.4 3.4 3.4" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 20 20"><path d="M4.5 3.5h11l-1 13.2a1 1 0 0 1-1 .8h-7a1 1 0 0 1-1-.8z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 7.5h5M7.5 10.5h5M7.5 13.5h3" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 16 16"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path d="M12 2.2a9.7 9.7 0 0 0-8.4 14.6L2.3 21.7l5-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.6.3 2.7 2.7 0 0 0-.9 2c0 1.2.9 2.4 1 2.5.1.2 1.7 2.7 4.2 3.8 1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.2.2-.6.2-1 .1-1.2l-.5-.3Z" fill="currentColor"/></symbol>
+  <symbol id="i-link" viewBox="0 0 16 16"><path d="M6.8 9.2a2.8 2.8 0 0 0 4 0l2.2-2.2a2.8 2.8 0 0 0-4-4l-.9.9M9.2 6.8a2.8 2.8 0 0 0-4 0L3 9a2.8 2.8 0 0 0 4 4l.9-.9" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
   <symbol id="mark" viewBox="0 0 40 40">
     <circle cx="20" cy="20" r="20" fill="#d21f2d"/>
     <path d="M13.6 9.6h12.8v6.6a6.4 6.4 0 0 1-12.8 0z" fill="#fff"/>
@@ -49,11 +58,18 @@
   <nav class="hd-nav" aria-label="Principal">
     <a href="#anatomia">O troféu</a>
     <a href="#fabrica">Fábrica</a>
-    <a href="catalogo.html">Catálogo</a>
     <a href="#esportes">Esportes</a>
+    <a href="#catalogo">Catálogo</a>
     <a href="#eventos">Eventos</a>
   </nav>
-  <a class="btn btn--sm mag hd-cta" href="#orcamento"><span>Pedir orçamento</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
+  <div class="hd-act">
+    <button class="list-btn" type="button" data-open-list aria-label="Abrir minha lista de orçamento">
+      <svg aria-hidden="true"><use href="#i-list"/></svg>
+      <span class="list-btn-t">Minha lista</span>
+      <span class="list-btn-n" data-count>0</span>
+    </button>
+    <a class="btn btn--sm mag hd-cta" href="#orcamento"><span>Pedir orçamento</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
+  </div>
   <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="mnav" aria-label="Abrir menu"><span class="menu-lines" aria-hidden="true"><i></i><i></i></span></button>
 </header>
 
@@ -61,12 +77,13 @@
   <nav class="mnav-links" aria-label="Menu principal">
     <a href="#anatomia"><span>02</span>O troféu</a>
     <a href="#fabrica"><span>03</span>Fábrica</a>
-    <a href="catalogo.html"><span>04</span>Catálogo</a>
     <a href="#esportes"><span>05</span>Esportes</a>
-    <a href="#eventos"><span>06</span>Eventos</a>
+    <a href="#catalogo"><span>06</span>Catálogo</a>
+    <a href="#eventos"><span>07</span>Eventos</a>
   </nav>
   <a class="btn mnav-cta" href="#orcamento"><span>Criar minha premiação</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
   <div class="mnav-foot">
+    <a href="#lista" data-open-list>Minha lista</a>
     <a href="https://wa.me/5532998042012" target="_blank" rel="noopener">WhatsApp</a>
     <a href="https://www.instagram.com/acheitrofeus/" target="_blank" rel="noopener">Instagram</a>
     <a href="https://bit.ly/acheitrofeuscombr" target="_blank" rel="noopener">Loja</a>
@@ -100,7 +117,7 @@
       <p class="lede">Troféus e medalhas personalizadas. <em>Mais de 20 mil eventos premiados, em todo o Brasil.</em></p>
       <div class="hero-cta">
         <a class="btn mag" href="#orcamento"><span>Criar minha premiação</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
-        <a class="link" href="catalogo.html">Ver catálogo</a>
+        <a class="link" href="#catalogo">Ver catálogo</a>
       </div>
     </div>
     <div class="scroll-cue" aria-hidden="true">Role<i></i></div>
@@ -232,7 +249,7 @@
       <p class="eyebrow">Coleção</p>
       <h2 class="d d-xl rv"><span class="ln"><span>Peças reais.</span></span><span class="ln"><span class="serif">Pódios reais.</span></span></h2>
     </div>
-    <a class="btn mag" href="catalogo.html"><span>Ver os 258 modelos</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
+    <a class="btn mag" href="#catalogo"><span>Ver os 258 modelos</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
   </div>
   <div class="col-grid">
     <figure class="pc pc--a" data-speed="-6"><div class="pc-box lit"><div class="tilt"><div class="obj" style="aspect-ratio:900/1527"><img src="img/cut/copa.webp" width="900" height="1527" alt="Troféus Copa Achei Troféus 2026 — Campeão e vice Sub 20" loading="lazy"><i class="sheen" data-mask></i></div></div></div><figcaption><b>Copa Achei Troféus</b><span>Campeão e vice · Sub 20</span></figcaption></figure>
@@ -264,8 +281,118 @@
   <div class="xprog m-only" aria-hidden="true"><i></i></div>
 </section>
 
-<!-- 06 · EVENTOS ========================================================== -->
-<section class="evt" id="eventos" data-rail="06|Eventos" data-bg="#0b0a09" data-fg="#efe8dc">
+<!-- 06 · CATÁLOGO ======================================================== -->
+<section class="cat" id="catalogo" aria-labelledby="ch-title" data-rail="06|Catálogo" data-bg="#0b0a09" data-fg="#efe8dc">
+<div class="ch">
+  <div class="ch-bg" aria-hidden="true"></div>
+  <div class="ch-copy">
+    <p class="eyebrow"><span>06 — Catálogo · <span data-total>258</span> modelos</span></p>
+    <h2 class="d ch-h" id="ch-title">
+      <span class="ln"><span>Monte sua</span></span>
+      <span class="ln"><span>premiação<span class="red">.</span></span></span>
+    </h2>
+    <p class="ch-sub">Escolha o modelo, a medida e a quantidade. <em>A gente devolve o orçamento no WhatsApp.</em></p>
+    <div class="ch-cta">
+      <a class="btn mag" href="#acervo"><span>Explorar o catálogo</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
+      <a class="link" href="#como">Como funciona</a>
+    </div>
+  </div>
+
+  <div class="podium" aria-hidden="true">
+    <figure class="pd pd--2"><div class="pd-obj"><img src="img/cut/roxo.webp" width="900" height="1417" alt=""></div><div class="pd-block"><b>2</b></div></figure>
+    <figure class="pd pd--1"><div class="pd-obj"><img src="img/cut/judo.webp" width="830" height="1452" alt=""></div><div class="pd-block"><b>1</b></div></figure>
+    <figure class="pd pd--3"><div class="pd-obj"><img src="img/cut/futebol.webp" width="900" height="1358" alt=""></div><div class="pd-block"><b>3</b></div></figure>
+  </div>
+
+  <ul class="ch-facts">
+    <li><b>+20 mil</b><span>eventos premiados</span></li>
+    <li><b>Sem</b><span>pedido mínimo</span></li>
+    <li><b>Na data</b><span>entrega combinada</span></li>
+    <li><b>Brasil</b><span>envio para todo o país</span></li>
+  </ul>
+</div>
+
+<div class="how" id="como">
+  <ol class="how-list">
+    <li><span class="how-n">01</span><b>Escolha</b><p>Navegue por esporte, busque pelo nome ou pelo código do catálogo impresso.</p></li>
+    <li><span class="how-n">02</span><b>Ajuste</b><p>Defina medidas e quantidades. Campeão, vice e terceiro lugar na mesma lista.</p></li>
+    <li><span class="how-n">03</span><b>Envie</b><p>Sua lista vai pronta para o WhatsApp da Achei. Você recebe o orçamento com prazo e frete.</p></li>
+  </ol>
+</div>
+</section>
+
+<section class="acv" id="acervo" aria-labelledby="acv-title" data-rail="06|Catálogo" data-bg="#efe8dc" data-fg="#0b0a09">
+  <div class="idx">
+    <div class="idx-head">
+      <div>
+        <p class="eyebrow">Índice</p>
+        <h2 class="d idx-h rv" id="acv-title"><span class="ln"><span>Por onde</span></span><span class="ln"><span>começar<span class="red">?</span></span></span></h2>
+      </div>
+      <p class="lede">Dez coleções, do futebol de base à mesa de poker. Toque em uma para ver todos os modelos, ou role para ver o catálogo inteiro.</p>
+    </div>
+    <div class="idx-grid" id="idx"></div>
+  </div>
+
+  <div class="bar" id="bar">
+    <div class="bar-in">
+      <div class="tabs-wrap">
+        <button class="tabs-arr tabs-arr--l" type="button" data-dir="-1" aria-label="Categorias anteriores" tabindex="-1"><svg aria-hidden="true" style="transform:scaleX(-1)"><use href="#i-chev"/></svg></button>
+        <div class="tabs" role="tablist" aria-label="Categorias" id="tabs"></div>
+        <button class="tabs-arr tabs-arr--r" type="button" data-dir="1" aria-label="Mais categorias" tabindex="-1"><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+      </div>
+      <div class="bar-tools">
+        <label class="search">
+          <svg aria-hidden="true"><use href="#i-search"/></svg>
+          <span class="sr">Buscar no catálogo</span>
+          <input type="search" id="q" placeholder="Buscar modelo ou código" autocomplete="off" enterkeyhint="search">
+        </label>
+        <label class="sort">
+          <span class="sr">Ordenar</span>
+          <select id="sort">
+            <option value="cat">Padrão</option>
+            <option value="asc">Menor preço</option>
+            <option value="desc">Maior preço</option>
+            <option value="tall">Maior altura</option>
+            <option value="az">Nome A–Z</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="subs" id="subs" hidden></div>
+  </div>
+
+  <div class="acv-meta">
+    <p id="meta" aria-live="polite"></p>
+    <p class="acv-note" data-price-only>Valores de referência da tabela. Personalização, prazo e frete são confirmados no orçamento.</p>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>
+    <p class="d">Nada por aqui<span class="red">.</span></p>
+    <p>Tente outro nome ou código. Se o modelo que você imaginou não existe, <a href="#criar">a gente cria</a>.</p>
+  </div>
+</section>
+
+<!-- PEÇA EXCLUSIVA -->
+<section class="mk" id="criar" aria-labelledby="mk-title" data-rail="06|Peça exclusiva" data-bg="#0b0a09" data-fg="#efe8dc">
+  <div class="mk-copy">
+    <p class="eyebrow">Projeto exclusivo</p>
+    <h2 class="d mk-h rv" id="mk-title"><span class="ln"><span>Não achou?</span></span><span class="ln"><span class="serif">A gente cria.</span></span></h2>
+    <p class="lede">Mande o logo, as cores e a ideia do seu evento. O time de criação da Achei desenha uma peça que só o seu pódio vai ter.</p>
+    <a class="btn mag" data-wa-custom href="https://wa.me/5532998042012" target="_blank" rel="noopener"><span>Criar peça exclusiva</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
+  </div>
+  <div class="mk-side">
+  <figure class="mk-obj"><img src="img/cut/podio.webp" width="900" height="947" alt="Três troféus do mesmo modelo em rosé, prata e dourado" loading="lazy" decoding="async"></figure>
+  <ul class="mk-proof">
+    <li><b>Parceira oficial</b><span>Copa Fla, CopaFla Maraca e FBT</span></li>
+    <li><b>Indústria própria</b><span>Projeto, corte a laser, impressão e acabamento</span></li>
+    <li><b>Logística Full</b><span>Expedição para todo o Brasil</span></li>
+  </ul>
+  </div>
+</section>
+
+<!-- 07 · EVENTOS ========================================================== -->
+<section class="evt" id="eventos" data-rail="07|Eventos" data-bg="#0b0a09" data-fg="#efe8dc">
   <div class="evt-stage">
   <div class="evt-back" aria-hidden="true">
     <div class="evt-num"><b>+</b>20 mil</div>
@@ -305,10 +432,10 @@
   </div>
 </section>
 
-<!-- 07 · ORÇAMENTO ======================================================== -->
-<section class="cta" id="orcamento" data-rail="07|Sua premiação">
+<!-- 08 · ORÇAMENTO ======================================================== -->
+<section class="cta" id="orcamento" data-rail="08|Sua premiação">
   <div>
-    <p class="eyebrow">07 — Sua premiação</p>
+    <p class="eyebrow">08 — Sua premiação</p>
     <h2 class="d cta-h rv"><span class="ln"><span>Os minutos mais</span></span><span class="ln"><span>importantes do</span></span><span class="ln"><span>seu evento</span></span><span class="ln"><span>começam aqui.</span></span></h2>
     <p class="cta-sub">Antes do apito final. Antes do pódio. Antes das fotos.</p>
 
@@ -336,7 +463,7 @@
         <span class="badge">Sem pedido mínimo</span>
       </div>
       <p class="bld-note">Abrimos o WhatsApp da Achei — (32) 9 9804-2012 — com a sua mensagem já escrita. É só enviar.</p>
-      <a class="bld-cat" href="catalogo.html"><span>Já sabe o modelo?</span> Escolha no catálogo, com medidas e quantidades →</a>
+      <a class="bld-cat" href="#catalogo"><span>Já sabe o modelo?</span> Escolha no catálogo, com medidas e quantidades →</a>
     </form>
   </div>
   <figure class="cta-obj">
@@ -347,7 +474,7 @@
 
 </main>
 
-<footer class="ft" data-bg="#0b0a09" data-fg="#efe8dc" data-rail="08|Achei">
+<footer class="ft" data-bg="#0b0a09" data-fg="#efe8dc" data-rail="09|Achei">
   <div class="ft-grid">
     <div><p class="ft-claim">Troféus e medalhas personalizadas para quem leva a conquista a sério.</p></div>
     <div>
@@ -355,7 +482,7 @@
       <ul>
         <li><a href="https://wa.me/5532998042012" target="_blank" rel="noopener">WhatsApp (32) 9 9804-2012</a></li>
         <li><a href="https://www.instagram.com/acheitrofeus/" target="_blank" rel="noopener">Instagram @acheitrofeus</a></li>
-        <li><a href="catalogo.html">Catálogo online</a></li>
+        <li><a href="#catalogo">Catálogo online</a></li>
         <li><a href="https://bit.ly/acheitrofeuscombr" target="_blank" rel="noopener">Loja</a></li>
       </ul>
     </div>
@@ -372,7 +499,7 @@
       <ul>
         <li><a href="#anatomia">O troféu</a></li>
         <li><a href="#fabrica">Fábrica</a></li>
-        <li><a href="catalogo.html">Catálogo</a></li>
+        <li><a href="#catalogo">Catálogo</a></li>
         <li><a href="#esportes">Esportes</a></li>
         <li><a href="#orcamento">Orçamento</a></li>
       </ul>
@@ -382,11 +509,122 @@
   <div class="ft-legal"><span>© 2026 Achei Troféus. Eternizamos conquistas.</span><a href="#top">Voltar ao topo ↑</a></div>
 </footer>
 
+<!-- Barra fixa da lista (celular e quando há itens) -->
+<button class="dock" id="dock" type="button" data-open-list hidden>
+  <span class="dock-n" data-count>0</span>
+  <span class="dock-t"><b>Minha lista</b><span id="dockSum"></span></span>
+  <span class="dock-go">Ver e enviar <svg aria-hidden="true"><use href="#i-chev"/></svg></span>
+</button>
+
+<!-- Produto ============================================================== -->
+<dialog class="qv" id="qv" data-lenis-prevent aria-labelledby="qvName">
+  <div class="qv-in">
+    <figure class="qv-ph">
+      <div class="qv-img"><img id="qvImg" alt="" width="440" height="550"></div>
+      <span class="qv-code" id="qvCode"></span>
+      <div class="qv-nav">
+        <button type="button" id="qvPrev" aria-label="Modelo anterior"><svg aria-hidden="true" style="transform:scaleX(-1)"><use href="#i-chev"/></svg></button>
+        <span id="qvPos"></span>
+        <button type="button" id="qvNext" aria-label="Próximo modelo"><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+      </div>
+    </figure>
+    <div class="qv-body">
+      <button class="x" type="button" data-close aria-label="Fechar"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+      <p class="qv-cat" id="qvCat"></p>
+      <h2 class="d qv-name" id="qvName"></h2>
+      <div class="qv-head">
+        <p class="qv-lbl">Medidas e quantidades</p>
+        <button type="button" class="qv-kit" id="qvKit">Kit pódio · 1º 2º 3º</button>
+      </div>
+      <ul class="sizes" id="qvSizes"></ul>
+      <label class="qv-note">
+        <span>Personalização <i>(opcional)</i></span>
+        <textarea id="qvNote" rows="2" maxlength="240" placeholder="Ex.: Campeão, Vice e 3º lugar · Sub 15 · logo do evento"></textarea>
+      </label>
+      <div class="qv-foot">
+        <p class="qv-sum" id="qvSum"></p>
+        <button class="btn" type="button" id="qvAdd"><span id="qvAddT">Adicionar à lista</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<!-- Lista de orçamento =================================================== -->
+<dialog class="dr" id="dr" data-lenis-prevent aria-labelledby="drTitle">
+  <div class="dr-in">
+    <header class="dr-hd">
+      <div>
+        <p class="eyebrow">Orçamento</p>
+        <h2 class="d dr-title" id="drTitle">Minha lista</h2>
+      </div>
+      <button class="x" type="button" data-close aria-label="Fechar lista"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    </header>
+
+    <div class="dr-scroll">
+      <div class="dr-empty" id="drEmpty">
+        <p class="d">Sua lista está vazia<span class="red">.</span></p>
+        <p>Escolha um modelo, defina medidas e quantidades e ele aparece aqui. Você pode mudar tudo depois.</p>
+        <div class="dr-start" id="drStart"></div>
+      </div>
+
+      <ul class="lines" id="lines"></ul>
+
+      <section class="ent" id="ent" aria-labelledby="entTitle">
+        <header class="ent-hd"><span id="entTitle">Entrega e personalização</span><i>vai junto na mensagem</i></header>
+
+        <fieldset class="ent-g">
+          <legend>Para onde entregamos?</legend>
+          <div class="ent-f">
+            <label><span>Cidade</span><input name="cidade" autocomplete="address-level2" placeholder="Ex.: Juiz de Fora"></label>
+            <label><span>Estado</span><input name="uf" autocomplete="address-level1" list="ufs" placeholder="Ex.: MG"></label>
+            <label class="full"><span>País</span><input name="pais" autocomplete="country-name" placeholder="Brasil"></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="ent-g">
+          <legend>Sobre o evento <i>opcional</i></legend>
+          <div class="ent-f">
+            <label><span>Seu nome</span><input name="nome" autocomplete="name" placeholder="Como podemos te chamar"></label>
+            <label><span>Data do evento</span><input name="data" type="date"></label>
+            <label class="full"><span>Nome do evento</span><input name="evento" placeholder="Ex.: Copa Verão de Beach Tennis"></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="ent-g">
+          <legend>Mensagem personalizada <i>opcional</i></legend>
+          <div class="ent-f">
+            <label class="full"><span class="sr">Mensagem personalizada</span><textarea name="msg" rows="3" maxlength="800" placeholder="Textos das placas, cores, prazo, retirada… o que você quiser dizer para a Achei."></textarea></label>
+          </div>
+        </fieldset>
+
+        <datalist id="ufs"><option value="AC"><option value="AL"><option value="AP"><option value="AM"><option value="BA"><option value="CE"><option value="DF"><option value="ES"><option value="GO"><option value="MA"><option value="MT"><option value="MS"><option value="MG"><option value="PA"><option value="PB"><option value="PR"><option value="PE"><option value="PI"><option value="RJ"><option value="RN"><option value="RS"><option value="RO"><option value="RR"><option value="SC"><option value="SP"><option value="SE"><option value="TO"></datalist>
+      </section>
+    </div>
+
+    <footer class="dr-ft" id="drFt">
+      <div class="dr-sum">
+        <p><b id="sumPieces">0</b> peças · <span id="sumModels">0 modelos</span></p>
+        <p data-price-only><span>Referência da tabela</span><b id="sumValue">R$ 0,00</b></p>
+      </div>
+      <a class="btn btn-wa" id="send" href="https://wa.me/5532998042012" target="_blank" rel="noopener"><svg class="wa" aria-hidden="true"><use href="#i-wa"/></svg><span><span class="d-only">Pedir orçamento no WhatsApp</span><span class="m-only">Orçamento no WhatsApp</span></span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>
+      <div class="dr-tools">
+        <button type="button" id="share"><svg aria-hidden="true"><use href="#i-link"/></svg>Copiar link da lista</button>
+        <button type="button" id="clear">Limpar lista</button>
+      </div>
+    </footer>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <div class="mcta" id="mcta"><a class="btn" href="#orcamento"><span>Criar minha premiação</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a></div>
 
 <script src="js/gsap.min.js"></script>
 <script src="js/ScrollTrigger.min.js"></script>
 <script src="js/lenis.min.js"></script>
 <script src="js/site.js"></script>
+<script src="js/catalogo-data.js"></script>
+<script src="js/catalogo.js"></script>
 </body>
 </html>
