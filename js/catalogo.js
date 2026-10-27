@@ -11,8 +11,10 @@
     mostrarPrecos: true,           // false = catálogo só de orçamento, sem valores
     chaveLista: 'achei:lista:v1',
     chaveEvento: 'achei:evento:v1',
+    maxQtd: 10000,                 // quantidade máxima por medida
   };
 
+  const MAXQ = CFG.maxQtd;
   const D = window.ACHEI_CATALOGO;
   if (!D) return;
 
@@ -26,7 +28,8 @@
   const money = (v) => brl.format(v).replace(/ /g, ' ');
   const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+  const num = (n) => Number(n).toLocaleString('pt-BR');
+  const plural = (n, um, varios) => `${num(n)} ${n === 1 ? um : varios}`;
   const store = {
     get(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch (e) { return fb; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* modo privado */ } },
@@ -66,7 +69,7 @@
   const bruto = Array.isArray(salvo) ? { linhas: salvo, notas: {} } : salvo || { linhas: [], notas: {} };
   let lista = (bruto.linhas || [])
     .filter((l) => l && byId.has(l.id) && sizeOf(byId.get(l.id), l.h) && l.q > 0)
-    .map((l) => ({ id: l.id, h: l.h, q: Math.min(9999, l.q | 0) }));
+    .map((l) => ({ id: l.id, h: l.h, q: Math.min(MAXQ, l.q | 0) }));
   let notas = {};
   Object.entries(bruto.notas || {}).forEach(([id, n]) => { if (byId.has(id) && n) notas[id] = String(n).slice(0, 240); });
   (bruto.linhas || []).forEach((l) => { if (l && l.note && byId.has(l.id) && !notas[l.id]) notas[l.id] = String(l.note).slice(0, 240); });
@@ -340,7 +343,7 @@
 
   const stepper = (val, min, label) => `<span class="step">
       <button type="button" data-d="-1" aria-label="Diminuir ${label}" ${val <= min ? 'disabled' : ''}><svg aria-hidden="true"><use href="#i-minus"/></svg></button>
-      <input type="number" inputmode="numeric" min="${min}" max="9999" value="${val}" aria-label="Quantidade ${label}">
+      <input type="number" inputmode="numeric" min="${min}" max="${MAXQ}" value="${val}" aria-label="Quantidade ${label}">
       <button type="button" data-d="1" aria-label="Aumentar ${label}"><svg aria-hidden="true"><use href="#i-plus"/></svg></button></span>`;
 
   const abrirFicha = (id) => {
@@ -406,13 +409,13 @@
     const b = e.target.closest('[data-d]');
     if (!b) return;
     const h = b.closest('li').dataset.h;
-    fq[h] = Math.max(0, Math.min(9999, (fq[h] || 0) + Number(b.dataset.d)));
+    fq[h] = Math.max(0, Math.min(MAXQ, (fq[h] || 0) + Number(b.dataset.d)));
     atualizarFicha();
   });
   qvSizes.addEventListener('input', (e) => {
     if (e.target.tagName !== 'INPUT') return;
     const h = e.target.closest('li').dataset.h;
-    fq[h] = Math.max(0, Math.min(9999, parseInt(e.target.value, 10) || 0));
+    fq[h] = Math.max(0, Math.min(MAXQ, parseInt(e.target.value, 10) || 0));
     atualizarFicha();
   });
   qvSizes.addEventListener('focusin', (e) => { if (e.target.tagName === 'INPUT') e.target.select(); });
@@ -451,12 +454,70 @@
 
   /* ------------------------------------------------------------- lista (gaveta) */
   const ul = $('#lines');
-  const evento = Object.assign({ nome: '', evento: '', cidade: '', data: '', obs: '' }, store.get(CFG.chaveEvento, {}));
+  const evento = Object.assign({ nome: '', evento: '', data: '', cidade: '', uf: '', pais: '', msg: '' }, store.get(CFG.chaveEvento, {}));
+  if (evento.obs && !evento.msg) { evento.msg = evento.obs; delete evento.obs; }
   $$('#evt [name]').forEach((f) => {
     f.value = evento[f.name] || '';
     f.addEventListener('input', () => { evento[f.name] = f.value; store.set(CFG.chaveEvento, evento); atualizarEnvio(); });
   });
-  if (Object.values(evento).some(Boolean)) $('#evt').open = true;
+
+  /* ------------------------------------------------------------- logo */
+  // O link do WhatsApp só leva texto: a logo segue num segundo toque
+  // (compartilhar no celular, copiar e colar no computador).
+  let logo = null;
+  const up = $('#up'), logoIn = $('#logo');
+  const kb = (n) => (n > 1048576 ? `${(n / 1048576).toFixed(1).replace('.', ',')} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
+  const ehImagem = (f) => /^image\/(png|jpe?g|webp|gif)$/.test(f.type);
+  const setLogo = (f) => {
+    if (f && f.size > 25 * 1048576) { toast('Arquivo acima de 25 MB. Envie uma versão menor.'); f = null; }
+    logo = f || null;
+    logoIn.value = '';
+    up.hidden = !!logo;
+    $('#upFile').hidden = !logo;
+    $('#logoStep').hidden = true;
+    if (logo) {
+      const th = $('#upTh');
+      th.style.backgroundImage = '';
+      th.textContent = '';
+      if (ehImagem(logo) || logo.type === 'image/svg+xml') th.style.backgroundImage = `url("${URL.createObjectURL(logo)}")`;
+      else th.textContent = (logo.name.split('.').pop() || 'arq').toUpperCase().slice(0, 4);
+      $('#upName').textContent = logo.name;
+      $('#upInfo').textContent = `${kb(logo.size)} · enviada após o pedido`;
+    }
+    atualizarEnvio();
+  };
+  logoIn.addEventListener('change', () => setLogo(logoIn.files[0]));
+  $('#upRm').addEventListener('click', () => setLogo(null));
+  ['dragenter', 'dragover'].forEach((t) => up.addEventListener(t, (e) => { e.preventDefault(); up.classList.add('is-drag'); }));
+  ['dragleave', 'drop'].forEach((t) => up.addEventListener(t, () => up.classList.remove('is-drag')));
+  up.addEventListener('drop', (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) setLogo(e.dataTransfer.files[0]); });
+
+  const podeCompartilhar = () => !!(logo && navigator.canShare && navigator.canShare({ files: [logo] }));
+  const pngDe = (f) => new Promise((ok, erro) => {
+    const im = new Image();
+    im.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = im.naturalWidth; c.height = im.naturalHeight;
+      c.getContext('2d').drawImage(im, 0, 0);
+      c.toBlob((b) => (b ? ok(b) : erro()), 'image/png');
+    };
+    im.onerror = erro;
+    im.src = URL.createObjectURL(f);
+  });
+  const copiarLogo = async () => {
+    if (!logo || !ehImagem(logo) || !window.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write) return false;
+    try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngDe(logo) })]); return true; } catch (e) { return false; }
+  };
+  const mac = /Mac|iPhone|iPad/.test(navigator.platform);
+  const enviarLogo = async () => {
+    if (!logo) return;
+    if (podeCompartilhar()) {
+      try { await navigator.share({ files: [logo], title: 'Logo — pedido Achei Troféus' }); return; } catch (e) { if (e.name === 'AbortError') return; }
+    }
+    if (await copiarLogo()) toast(`<b>Logo copiada.</b> Na conversa da Achei, cole com ${mac ? '⌘V' : 'Ctrl+V'}.`);
+    else toast('Arraste o arquivo da logo para a conversa da Achei no WhatsApp.');
+  };
+  $('#logoSend').addEventListener('click', enviarLogo);
 
   const grupoHTML = (id) => {
     const p = byId.get(id), ls = linhasDe(id);
@@ -492,8 +553,9 @@
   };
   const resumoLista = () => {
     const t = totais();
-    $('#sumPieces').textContent = t.pecas;
-    $('#sumModels').textContent = t.modelos;
+    $('#sumPieces').textContent = num(t.pecas);
+    $('#sumPieces').nextSibling.textContent = t.pecas === 1 ? ' peça · ' : ' peças · ';
+    $('#sumModels').textContent = plural(t.modelos, 'modelo', 'modelos');
     $('#sumValue').textContent = money(t.valor);
     $$('.ln-row', ul).forEach((row) => {
       const l = linhaDe(row), v = $('.ln-v', row);
@@ -532,7 +594,7 @@
     const b = e.target.closest('[data-d]');
     if (b) {
       const l = linhaDe(b), st2 = b.closest('.step');
-      l.q = Math.max(1, Math.min(9999, l.q + Number(b.dataset.d)));
+      l.q = Math.max(1, Math.min(MAXQ, l.q + Number(b.dataset.d)));
       $('input', st2).value = l.q;
       $('[data-d="-1"]', st2).disabled = l.q <= 1;
       salvar(); resumoLista();
@@ -542,7 +604,7 @@
     const el = e.target;
     if (el.matches('.step input')) {
       const l = linhaDe(el), v = parseInt(el.value, 10);
-      if (v >= 1) { l.q = Math.min(9999, v); $('[data-d="-1"]', el.closest('.step')).disabled = l.q <= 1; salvar(); resumoLista(); }
+      if (v >= 1) { l.q = Math.min(MAXQ, v); $('[data-d="-1"]', el.closest('.step')).disabled = l.q <= 1; salvar(); resumoLista(); }
     } else if (el.matches('.ln-note input')) {
       const id = el.closest('.ln-it').dataset.id, v = el.value.trim();
       if (v) notas[id] = v.slice(0, 240); else delete notas[id];
@@ -554,7 +616,7 @@
     if (el.matches('.step input')) { el.value = linhaDe(el).q; return; }
     if (!el.matches('.ln-size')) return;
     const l = linhaDe(el), dup = lista.find((x) => x !== l && x.id === l.id && x.h === el.value);
-    if (dup) { dup.q = Math.min(9999, dup.q + l.q); lista.splice(lista.indexOf(l), 1); toast('Essa medida já estava na lista: <b>quantidades somadas</b>'); }
+    if (dup) { dup.q = Math.min(MAXQ, dup.q + l.q); lista.splice(lista.indexOf(l), 1); toast('Essa medida já estava na lista: <b>quantidades somadas</b>'); }
     else l.h = el.value;
     salvar(); desenharLista();
   });
@@ -608,7 +670,7 @@
       const [itens, ns = ''] = m[1].split('!');
       let n = 0;
       itens.split('.').forEach((t) => {
-        const [id, i, q] = t.split('~'), p = byId.get(id), s = p && p.s[Number(i)], qt = Math.min(9999, parseInt(q, 10) || 0);
+        const [id, i, q] = t.split('~'), p = byId.get(id), s = p && p.s[Number(i)], qt = Math.min(MAXQ, parseInt(q, 10) || 0);
         if (!s || qt < 1) return;
         const ex = lista.find((l) => l.id === id && l.h === s.h);
         if (ex) ex.q = Math.max(ex.q, qt); else lista.push({ id, h: s.h, q: qt });
@@ -637,7 +699,7 @@
       const p = byId.get(id);
       L.push('');
       L.push(`*${i + 1}. ${p.tipo} ${p.n}* — ${p.cat.n}${p.k ? ` · ${p.k}` : ''}`);
-      linhasDe(id).forEach((l) => L.push(`   • ${l.h} × ${l.q}`));
+      linhasDe(id).forEach((l) => L.push(`   • ${l.h} × ${num(l.q)}`));
       if (notas[id]) L.push(`   _Personalização:_ ${notas[id]}`);
     });
     if (CFG.mostrarPrecos) {
@@ -645,12 +707,27 @@
       L.push(`Referência pela tabela do catálogo: ${money(t.valor)} (sujeito à confirmação)`);
     }
     const ev = [
-      ['Nome', evento.nome], ['Evento', evento.evento], ['Cidade/UF', evento.cidade], ['Data do evento', dataBR(evento.data)], ['Obs.', evento.obs],
+      ['Nome', evento.nome], ['Evento', evento.evento], ['Data do evento', dataBR(evento.data)],
     ].filter(([, v]) => v && String(v).trim());
     if (ev.length) {
       L.push('');
       L.push('*EVENTO*');
       ev.forEach(([k, v]) => L.push(`${k}: ${String(v).trim()}`));
+    }
+    const ent = [['Cidade', evento.cidade], ['Estado', evento.uf], ['País', evento.pais]].filter(([, v]) => v && v.trim());
+    if (ent.length) {
+      L.push('');
+      L.push('*ENTREGA*');
+      ent.forEach(([k, v]) => L.push(`${k}: ${v.trim()}`));
+    }
+    if (evento.msg && evento.msg.trim()) {
+      L.push('');
+      L.push('*MENSAGEM*');
+      L.push(evento.msg.trim());
+    }
+    if (logo) {
+      L.push('');
+      L.push(`*LOGO / ARTE:* ${logo.name} — envio o arquivo em seguida, nesta conversa.`);
     }
     if (/^https?:/.test(location.protocol)) {
       L.push('');
@@ -663,7 +740,17 @@
     send.classList.toggle('is-off', !lista.length);
     send.href = `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent(mensagem())}`;
   };
-  send.addEventListener('click', () => { if (lista.length) setTimeout(() => toast('Abrindo o WhatsApp da Achei…'), 50); });
+  send.addEventListener('click', () => {
+    if (!lista.length) return;
+    if (!logo) { setTimeout(() => toast('Abrindo o WhatsApp da Achei…'), 50); return; }
+    // computador: a logo já vai para a área de transferência no mesmo clique
+    const celular = podeCompartilhar() && matchMedia('(pointer: coarse)').matches;
+    $('#logoStep').hidden = false;
+    $('#logoStepT').textContent = celular
+      ? 'Volte aqui e toque para mandar o arquivo na conversa da Achei.'
+      : 'Toque para copiar a logo e cole na conversa da Achei.';
+    if (!celular) copiarLogo().then((ok) => { if (ok) { $('#logoStepT').textContent = `Logo copiada: cole na conversa da Achei (${mac ? '⌘V' : 'Ctrl+V'}).`; toast(`<b>Logo copiada.</b> No WhatsApp, cole com ${mac ? '⌘V' : 'Ctrl+V'}.`); } });
+  });
   $$('[data-wa-custom]').forEach((a) => {
     a.href = `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent('Olá, Achei Troféus! Quero criar uma peça exclusiva para o meu evento.')}`;
   });
