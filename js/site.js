@@ -14,16 +14,16 @@
 
   /* ------------------------------------------------------------------ dados */
   const SPORTS = [
-    { n: 'Futebol', img: 'img/cut/futebol.webp', obj: 1, cap: 'Campeão · Vice-campeão' },
-    { n: 'Futsal', img: 'img/cut/futsal.webp', obj: 1, cap: 'Copa Minas Gerais de Futsal' },
-    { n: 'Beach Tennis', img: 'img/beach.webp', cap: 'World Tour BT 400' },
+    { n: 'Futebol', img: 'img/cut/futebol.webp', obj: 1, cap: 'Campeão · Vice-campeão', cat: 'futebol' },
+    { n: 'Futsal', img: 'img/cut/futsal.webp', obj: 1, cap: 'Copa Minas Gerais de Futsal', cat: 'futebol' },
+    { n: 'Beach Tennis', img: 'img/beach.webp', cap: 'World Tour BT 400', cat: 'beach' },
     { n: 'Tênis', img: 'img/cut/tenis.webp', obj: 1, cap: 'Ranking Tennis' },
-    { n: 'Vôlei', img: 'img/volei.webp', cap: 'O título é do time' },
+    { n: 'Vôlei', img: 'img/volei.webp', cap: 'O título é do time', cat: 'volei' },
     { n: 'Futevôlei', img: 'img/ligadelas.webp', cap: 'Liga Delas' },
     { n: 'Corrida', img: 'img/hyrox.webp', cap: 'Hyrox Amazônia' },
     { n: 'Lutas', img: 'img/cut/judo.webp', obj: 1, cap: '2ª Copa Kinayama de Judô' },
     { n: 'Corporativo', img: 'img/cafu.webp', cap: 'Homenagens' },
-    { n: 'Medalhas', img: 'img/medalhas.webp', cap: 'Medalhas de metal' },
+    { n: 'Medalhas', img: 'img/medalhas.webp', cap: 'Medalhas de metal', cat: 'medalhas' },
     { n: 'Personalizados', img: 'img/truco.webp', cap: 'Campeonato de truco' },
   ];
   const pad = (i) => String(i + 1).padStart(2, '0');
@@ -31,12 +31,14 @@
   /* ------------------------------------------------- montagem de conteúdo */
   const list = $('#espList'), frame = $('#espFrame'), cards = $('#espCards'), chipsSport = $('#bldSport');
   SPORTS.forEach((s, i) => {
+    // Esportes com coleção própria abrem direto no catálogo; os demais vão para o orçamento
+    const href = s.cat ? `catalogo.html?c=${s.cat}` : '#orcamento';
     list.insertAdjacentHTML('beforeend',
-      `<li><a class="esp-item" href="#orcamento" data-i="${i}" data-sport="${s.n}"><span class="n">${pad(i)}</span><span class="t">${s.n}</span><span class="go">Montar premiação</span></a></li>`);
+      `<li><a class="esp-item" href="${href}" data-i="${i}" data-sport="${s.n}"><span class="n">${pad(i)}</span><span class="t">${s.n}</span><span class="go">${s.cat ? 'Ver modelos' : 'Montar premiação'}</span></a></li>`);
     frame.insertAdjacentHTML('beforeend',
       `<div class="cut${s.obj ? ' is-obj' : ''}" data-i="${i}"><img src="${s.img}" alt="${s.n} — ${s.cap}" loading="lazy" decoding="async"></div>`);
     cards.insertAdjacentHTML('beforeend',
-      `<a class="ec" href="#orcamento" data-sport="${s.n}"><div class="ph"><img class="${s.obj ? 'is-obj' : ''}" src="${s.img}" alt="${s.n} — ${s.cap}" loading="lazy" decoding="async"><b><small>${pad(i)}</small>${s.n}</b></div><p><span>${s.cap}</span>Montar →</p></a>`);
+      `<a class="ec" href="${href}" data-sport="${s.n}"><div class="ph"><img class="${s.obj ? 'is-obj' : ''}" src="${s.img}" alt="${s.n} — ${s.cap}" loading="lazy" decoding="async"><b><small>${pad(i)}</small>${s.n}</b></div><p><span>${s.cap}</span>${s.cat ? 'Ver modelos' : 'Montar'} →</p></a>`);
     chipsSport.insertAdjacentHTML('beforeend',
       `<label class="chip"><input type="radio" name="esporte" value="${s.n}"><span>${s.n}</span></label>`);
   });

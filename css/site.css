@@ -476,6 +476,11 @@ button, input, select { font: inherit; color: inherit; }
 .ft-legal { display: flex; justify-content: space-between; gap: 20px; padding: 22px 0 28px; font-size: 12px; opacity: .5; letter-spacing: .06em; }
 
 /* Peças que só existem em um dos formatos */
+/* Atalho do orçamento para o catálogo */
+.bld-cat { display: inline-block; margin-top: 18px; padding: 6px 0; font-size: 15px; background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat; transition: background-size .6s var(--ease); }
+.bld-cat span { font-weight: 600; }
+.bld-cat:hover { background-size: 0 1px; background-position: 100% 100%; }
+
 .m-only, .mcta, .menu-btn, .xprog, .xlabel { display: none; }
 .mnav { display: none; }
 
