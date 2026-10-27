@@ -59,7 +59,8 @@
     });
   });
   const byId = new Map(prods.map((p) => [p.id, p]));
-  const img = (p) => `img/catalogo/${p.id}.webp`;
+  // versão em arquivo único: as fotos vêm embutidas em window.ACHEI_IMG
+  const img = (p) => (window.ACHEI_IMG && window.ACHEI_IMG[p.id]) || `img/catalogo/${p.id}.webp`;
   const sizeOf = (p, h) => p.s.find((s) => s.h === h);
   const splitH = (h) => { const [a, ...b] = h.split(' · '); return [a, b.join(' · ')]; };
 

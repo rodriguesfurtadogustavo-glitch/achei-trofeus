@@ -57,3 +57,8 @@ Para testar localmente: `python3 -m http.server` dentro da pasta e abra http://l
   #volei031 (San Diego e Orlando); Pesca 5 e Pesca 12 não têm código; Peteca/Kart/Sinuca traz o código
   provisório #00000000 (no site ficam sem código). O PDF de Ciclismo tem 4 páginas ocultas que são cópias do
   Beach Tennis (ignoradas).
+
+## Versão em arquivo único
+`python3 tools/arquivo-unico.py` gera `oficial/index.html` e `oficial/catalogo.html` com estilos, scripts,
+fontes e fotos embutidos (as fotos do catálogo são reduzidas para 360×450). Cada arquivo abre sozinho, sem
+pastas e sem internet; mantenha os dois juntos para os links entre site e catálogo funcionarem.
