@@ -461,63 +461,6 @@
     f.addEventListener('input', () => { evento[f.name] = f.value; store.set(CFG.chaveEvento, evento); atualizarEnvio(); });
   });
 
-  /* ------------------------------------------------------------- logo */
-  // O link do WhatsApp só leva texto: a logo segue num segundo toque
-  // (compartilhar no celular, copiar e colar no computador).
-  let logo = null;
-  const up = $('#up'), logoIn = $('#logo');
-  const kb = (n) => (n > 1048576 ? `${(n / 1048576).toFixed(1).replace('.', ',')} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
-  const ehImagem = (f) => /^image\/(png|jpe?g|webp|gif)$/.test(f.type);
-  const setLogo = (f) => {
-    if (f && f.size > 25 * 1048576) { toast('Arquivo acima de 25 MB. Envie uma versão menor.'); f = null; }
-    logo = f || null;
-    logoIn.value = '';
-    up.hidden = !!logo;
-    $('#upFile').hidden = !logo;
-    $('#logoStep').hidden = true;
-    if (logo) {
-      const th = $('#upTh');
-      th.style.backgroundImage = '';
-      th.textContent = '';
-      if (ehImagem(logo) || logo.type === 'image/svg+xml') th.style.backgroundImage = `url("${URL.createObjectURL(logo)}")`;
-      else th.textContent = (logo.name.split('.').pop() || 'arq').toUpperCase().slice(0, 4);
-      $('#upName').textContent = logo.name;
-      $('#upInfo').textContent = `${kb(logo.size)} · enviada após o pedido`;
-    }
-    atualizarEnvio();
-  };
-  logoIn.addEventListener('change', () => setLogo(logoIn.files[0]));
-  $('#upRm').addEventListener('click', () => setLogo(null));
-  ['dragenter', 'dragover'].forEach((t) => up.addEventListener(t, (e) => { e.preventDefault(); up.classList.add('is-drag'); }));
-  ['dragleave', 'drop'].forEach((t) => up.addEventListener(t, () => up.classList.remove('is-drag')));
-  up.addEventListener('drop', (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) setLogo(e.dataTransfer.files[0]); });
-
-  const podeCompartilhar = () => !!(logo && navigator.canShare && navigator.canShare({ files: [logo] }));
-  const pngDe = (f) => new Promise((ok, erro) => {
-    const im = new Image();
-    im.onload = () => {
-      const c = document.createElement('canvas');
-      c.width = im.naturalWidth; c.height = im.naturalHeight;
-      c.getContext('2d').drawImage(im, 0, 0);
-      c.toBlob((b) => (b ? ok(b) : erro()), 'image/png');
-    };
-    im.onerror = erro;
-    im.src = URL.createObjectURL(f);
-  });
-  const copiarLogo = async () => {
-    if (!logo || !ehImagem(logo) || !window.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write) return false;
-    try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngDe(logo) })]); return true; } catch (e) { return false; }
-  };
-  const mac = /Mac|iPhone|iPad/.test(navigator.platform);
-  const enviarLogo = async () => {
-    if (!logo) return;
-    if (podeCompartilhar()) {
-      try { await navigator.share({ files: [logo], title: 'Logo — pedido Achei Troféus' }); return; } catch (e) { if (e.name === 'AbortError') return; }
-    }
-    if (await copiarLogo()) toast(`<b>Logo copiada.</b> Na conversa da Achei, cole com ${mac ? '⌘V' : 'Ctrl+V'}.`);
-    else toast('Arraste o arquivo da logo para a conversa da Achei no WhatsApp.');
-  };
-  $('#logoSend').addEventListener('click', enviarLogo);
 
   const grupoHTML = (id) => {
     const p = byId.get(id), ls = linhasDe(id);
@@ -725,10 +668,6 @@
       L.push('*MENSAGEM*');
       L.push(evento.msg.trim());
     }
-    if (logo) {
-      L.push('');
-      L.push(`*LOGO / ARTE:* ${logo.name} — envio o arquivo em seguida, nesta conversa.`);
-    }
     if (/^https?:/.test(location.protocol)) {
       L.push('');
       L.push(`Lista no site: ${linkLista()}`);
@@ -740,17 +679,7 @@
     send.classList.toggle('is-off', !lista.length);
     send.href = `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent(mensagem())}`;
   };
-  send.addEventListener('click', () => {
-    if (!lista.length) return;
-    if (!logo) { setTimeout(() => toast('Abrindo o WhatsApp da Achei…'), 50); return; }
-    // computador: a logo já vai para a área de transferência no mesmo clique
-    const celular = podeCompartilhar() && matchMedia('(pointer: coarse)').matches;
-    $('#logoStep').hidden = false;
-    $('#logoStepT').textContent = celular
-      ? 'Volte aqui e toque para mandar o arquivo na conversa da Achei.'
-      : 'Toque para copiar a logo e cole na conversa da Achei.';
-    if (!celular) copiarLogo().then((ok) => { if (ok) { $('#logoStepT').textContent = `Logo copiada: cole na conversa da Achei (${mac ? '⌘V' : 'Ctrl+V'}).`; toast(`<b>Logo copiada.</b> No WhatsApp, cole com ${mac ? '⌘V' : 'Ctrl+V'}.`); } });
-  });
+  send.addEventListener('click', () => { if (lista.length) setTimeout(() => toast('Abrindo o WhatsApp da Achei…'), 50); });
   $$('[data-wa-custom]').forEach((a) => {
     a.href = `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent('Olá, Achei Troféus! Quero criar uma peça exclusiva para o meu evento.')}`;
   });
