@@ -164,8 +164,8 @@ export const SFX: {src: string; frame: number; volume: number}[] = [
 // Mixagem (o master final é normalizado a -16 LUFS / -1 dBTP no pós; ver README).
 export const MIX = {
 	voice: 1,
-	musicBed: 0.5,
-	musicUnderVoice: 0.13,
+	musicBed: 0.6,
+	musicUnderVoice: 0.22,
 	duckAttack: 4,
 	duckRelease: 10,
 };

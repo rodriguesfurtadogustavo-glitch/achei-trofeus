@@ -13,8 +13,5 @@ Config.setJpegQuality(92);
 // WebGL por software (sem GPU) para o trecho 3D.
 Config.setChromiumOpenGlRenderer('swangle');
 Config.setCodec('h264');
-Config.setPixelFormat('yuv420p');
-Config.setCrf(16);
-Config.setAudioCodec('aac');
 Config.setConcurrency(4);
 Config.setOverwriteOutput(true);

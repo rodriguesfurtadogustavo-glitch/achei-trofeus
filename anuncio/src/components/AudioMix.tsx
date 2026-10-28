@@ -13,7 +13,7 @@ const duckCurve: number[] = (() => {
 	const out: number[] = [];
 	let v = MIX.musicBed;
 	for (let i = 0; i < TOTAL_FRAMES; i++) {
-		const under = i >= lift ? MIX.musicUnderVoice * 1.35 : MIX.musicUnderVoice;
+		const under = i >= lift ? MIX.musicUnderVoice * 1.4 : MIX.musicUnderVoice;
 		const target = speaking[i] ? under : MIX.musicBed;
 		const rate = target < v ? 1 / MIX.duckAttack : 1 / MIX.duckRelease;
 		v += (target - v) * Math.min(1, rate * 2.2);

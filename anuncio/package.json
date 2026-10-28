@@ -5,7 +5,7 @@
   "description": "Anúncio vertical Achei Arquivos — Remotion",
   "scripts": {
     "dev": "remotion studio",
-    "render": "remotion render AcheiArquivos out/achei-arquivos-anuncio.mp4",
+    "render": "remotion render AcheiArquivos out/_render.mp4 --crf=16",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

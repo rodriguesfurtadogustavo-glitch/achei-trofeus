@@ -34,7 +34,7 @@ npx remotion studio
 node scripts/stills.mjs 30 400 870 1370 1450
 
 # 3) renderização
-npx remotion render AcheiArquivos out/_render.mp4
+npx remotion render AcheiArquivos out/_render.mp4 --crf=16
 
 # 4) masterização do áudio (loudnorm em 2 passagens; vídeo copiado)
 scripts/master.sh out/_render.mp4 out/achei-arquivos-anuncio.mp4
@@ -97,7 +97,7 @@ as transições são formas gráficas por cima dos cortes.
   bumbo/palmas/chimbal limpos, pad, baixo; cresce nas cenas 6–7 e resolve na cartela). Não havia
   trilha licenciada no material — trocar `public/audio/music.wav` por uma trilha licenciada mantém o
   ducking automático.
-- **Ducking**: a música desce sob a fala, calculado das legendas (`MIX` em `config.ts`).
+- **Ducking**: a música desce ~12 dB sob a fala (fica ~16–18 dB abaixo da voz; um pouco mais presente nas cenas 6–7), calculado das legendas (`MIX` em `config.ts`).
 - **Efeitos**: laser, passagem de cartão, toque de montagem da peça, lata e acento da chamada.
 - **Master**: `scripts/master.sh` → −16 LUFS integrados, pico verdadeiro ≤ −1 dBTP.
 
