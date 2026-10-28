@@ -94,6 +94,9 @@ troca leve de zoom. As emendas caem sempre em silêncio.
 - **Fechado** (padrão): o rosto vai para o centro, ~1,3× maior, sem o espaço vazio acima da cabeça.
 - **Aberto** (quadro original) só enquanto há título/elemento na faixa de cima; a câmera abre ~0,4 s
   antes de o elemento entrar e fecha de novo quando ele sai (`WIDE` e `FRAMING` em `config.ts`).
+- **Demonstração (cena 4)**: o rosto sobe para a metade de cima e o vídeo amplia (~1,36×) o
+  bastante para continuar cobrindo o quadro inteiro — embaixo do painel aparecem as mãos e a mesa,
+  sem faixa vazia (`DEMO_FRAMING` em `config.ts`).
 - A ampliação extra torna a imagem um pouco mais macia (os anexos têm 512 × 910).
 
 ## Áudio

@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
-import {BRAND, CAMERA_SHIFT, CAMERA_ZOOM, CLIPS, FRAMING, HEIGHT, SEGMENTS, WIDE, WIDTH} from '../config';
+import {BRAND, CAMERA_ZOOM, CLIPS, DEMO_AMOUNT, DEMO_FRAMING, FRAMING, HEIGHT, SEGMENTS, WIDE, WIDTH} from '../config';
 import {easeInOut, keyframes, mix, prog} from '../lib/anim';
 
 /** 0 = quadro aberto (original), 1 = fechado no rosto. */
@@ -15,7 +15,8 @@ export const tightness = (f: number) => {
 
 /**
  * Um trecho de um take. Reenquadramento digital ancorado no rosto: no quadro fechado o rosto vai
- * para (540, tightFaceY) e cresce `tightScale`; nos jump cuts dentro do take, o zoom muda um pouco.
+ * para (540, tightFaceY) e cresce `tightScale`; na tela dividida da demonstração vai para
+ * (540, DEMO_FRAMING.faceY) com escala que cobre o quadro todo; nos jump cuts, o zoom muda um pouco.
  */
 const SegmentView: React.FC<{seg: (typeof SEGMENTS)[number]}> = ({seg}) => {
 	const local = useCurrentFrame();
@@ -23,11 +24,12 @@ const SegmentView: React.FC<{seg: (typeof SEGMENTS)[number]}> = ({seg}) => {
 	const clip = CLIPS[seg.take];
 	const {x: fx, y: fy} = clip.face;
 	const tg = tightness(f);
+	const demo = keyframes(f, DEMO_AMOUNT);
 	const slow = keyframes(f - clip.start, CAMERA_ZOOM[seg.take]);
 	const punch = seg.index % 2 === 1 ? mix(1.05, FRAMING.punch, tg) : 1;
-	const s = slow * mix(1, FRAMING.tightScale, tg) * punch;
-	const tx = mix(0, 540 - fx, tg);
-	const ty = mix(0, FRAMING.tightFaceY - fy, tg);
+	const s = slow * mix(mix(1, FRAMING.tightScale, tg), DEMO_FRAMING.scale, demo) * punch;
+	const tx = mix(mix(0, 540 - fx, tg), 540 - fx, demo);
+	const ty = mix(mix(0, FRAMING.tightFaceY - fy, tg), DEMO_FRAMING.faceY - fy, demo);
 	return (
 		<AbsoluteFill style={{transform: `translate(${tx}px, ${ty}px) scale(${s})`, transformOrigin: `${fx}px ${fy}px`}}>
 			<OffthreadVideo src={staticFile(clip.file)} trimBefore={seg.in} muted style={{width: WIDTH, height: HEIGHT, objectFit: 'cover'}} />
@@ -36,11 +38,9 @@ const SegmentView: React.FC<{seg: (typeof SEGMENTS)[number]}> = ({seg}) => {
 };
 
 export const Presenter: React.FC = () => {
-	const f = useCurrentFrame();
-	const shift = keyframes(f, CAMERA_SHIFT);
 	return (
 		<AbsoluteFill style={{backgroundColor: BRAND.colors.bg}}>
-			<AbsoluteFill style={{transform: `translateY(${shift}px)`}}>
+			<AbsoluteFill>
 				{SEGMENTS.map((seg) => (
 					<Sequence key={`${seg.take}-${seg.index}`} from={seg.start} durationInFrames={seg.dur} layout="none">
 						<SegmentView seg={seg} />

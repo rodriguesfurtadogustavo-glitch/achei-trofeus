@@ -178,12 +178,16 @@ export const WIDE: [number, number][] = [
 	[CUE.s7.conheça - 16, CUE.s7.saiba - 4], // CONHEÇA OS MODELOS + página do site
 ];
 
-// Deslocamento vertical global (tela dividida da demonstração principal).
-export const DEMO_SHIFT = -330;
-export const CAMERA_SHIFT: [number, number][] = [
+/**
+ * Tela dividida da demonstração (cena 4): o rosto sobe para a metade de cima e o vídeo amplia o
+ * suficiente para continuar cobrindo o quadro inteiro (sem faixa vazia embaixo do painel).
+ * Escala mínima para cobrir: (1920 − faceY) / (1920 − rosto) ≈ 1,33 → usa 1,36.
+ */
+export const DEMO_FRAMING = {faceY: 540, scale: 1.36};
+export const DEMO_AMOUNT: [number, number][] = [
 	[CUE.s3.toPanel, 0],
-	[CUE.s3.toPanel + 16, DEMO_SHIFT],
-	[CUE.s4.mdf + 22, DEMO_SHIFT],
+	[CUE.s3.toPanel + 16, 1],
+	[CUE.s4.mdf + 22, 1],
 	[CUE.s4.mdf + 34, 0],
 ];
 
