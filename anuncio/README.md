@@ -24,8 +24,8 @@ npm install
 # 1) áudio: voz tratada + trilha original + efeitos   (python3 + numpy + ffmpeg)
 python3 -I scripts/prepare_audio.py
 
-# 2) (opcional) refazer contornos/máscaras do troféu  (numpy + opencv-python-headless<5)
-python -I scripts/trace_judo.py
+# 2) (opcional) refazer o vetor do modelo “asas”      (numpy + opencv-python-headless<5)
+python -I scripts/trace_model.py
 
 # prévia interativa
 npx remotion studio
@@ -36,7 +36,7 @@ node scripts/stills.mjs 30 400 870 1370 1450
 # 3) renderização
 npx remotion render AcheiArquivos out/_render.mp4 --crf=16
 
-# 4) masterização do áudio (loudnorm em 2 passagens; vídeo copiado)
+# 4) masterização: loudnorm em 2 passagens + vídeo em yuv420p BT.709 (compatível com plataformas)
 scripts/master.sh out/_render.mp4 out/achei-arquivos-anuncio.mp4
 
 # 5) legendas
@@ -51,18 +51,21 @@ software (`swangle`), então o 3D renderiza sem GPU.
 ```
 src/
   data/edit.json        ← dados editoriais: cortes (frames), rosto por take, legendas (s de origem)
-  data/judoPaths.ts     ← contornos vetoriais das camadas reais do troféu (gerado)
+  data/modelPaths.ts    ← vetor do modelo “asas” do catálogo: corpo, asas, disco, base (gerado)
+  lib/model.ts          ← geometria compartilhada entre o desenho 2D e o volume 3D
   config.ts             ← marca (cores, fontes), intensidade, marcações das cenas, câmera, efeitos, mixagem
   Composition.tsx       ← ordem das camadas
   components/           ← Presenter (vídeo + reenquadramento), Captions, Title, Laser, FileCard/MorphBox,
-                          CatalogCard, VectorDrawing, Trophy3D, SodaCan3D, EndCard, AudioMix
+                          PhotoCard, ModelDrawing, Trophy3D, SodaCan3D, Logo, EndCard, Grain, AudioMix
   scenes/Scene1..7.tsx  ← direção de cada cena
 public/
   videos/               ← os 7 takes originais (cópia intacta dos anexos)
-  catalog/, judo/       ← fotos do catálogo do site Achei Troféus (img/cut, img/judo)
+  models/               ← 5 renders oficiais dos modelos do catálogo Achei Arquivos
+  site/catalogo.mp4     ← trecho da gravação da página (3,4–8,0 s, acelerado 2×, sem barra de status)
+  ui/                   ← ícone do editor (enviado pela cliente) e textura de grão
   audio/                ← voice.wav, music.wav, sfx-*.wav (gerados por prepare_audio.py)
   fonts/                ← Bricolage Grotesque e Inter (OFL), empacotadas localmente
-scripts/                ← prepare_audio.py, trace_judo.py, stills.mjs, make_srt.mjs, master.sh
+scripts/                ← prepare_audio.py, trace_model.py, stills.mjs, make_srt.mjs, master.sh
 ```
 
 Tudo é determinado pelo frame (sem `Math.random` nem relógio): o mesmo frame sempre gera a mesma imagem.
@@ -108,14 +111,22 @@ as transições são formas gráficas por cima dos cortes.
   Conferir a grafia na escuta antes de veicular (`src/data/edit.json`, legenda “Eu sou …”).
 - Correções sobre a transcrição automática: “vem de troféus” → **vende troféus**; “Clique agora e saiba
   mais” → **em Saiba Mais**; “colocar a parte da” → **colocar parte da**.
-- **Logo**: não havia logo oficial utilizável; o nome é escrito em Bricolage Grotesque (sem símbolo).
-- **Corel**: não havia captura real. A cena 4 usa uma interface vetorial abstrata com o rótulo
-  **“Demonstração ilustrativa”**, sem logotipo de terceiros. Arquivo mostrado: `modelo-judo.cdr`
-  (formato `.CDR` pedido no briefing; nenhum outro formato ou versão de software é citado).
-- **Troféu 3D**: construído com as **camadas reais** do modelo de judô do catálogo (`img/judo` do site
-  Achei Troféus), cada uma vira uma chapa com borda de MDF. A placa mostra o texto editado na
-  demonstração (“COPA DO SEU CLIENTE · 2026”) — exemplo ilustrativo de personalização.
-- **Lata**: ilustrativa, vermelha lisa, sem marca de terceiros. Sem preço numérico (não confirmado).
-- **Cartões do catálogo**: fotos recortadas de `img/cut` do site.
+- **Logo**: redesenhado em vetor (`components/Logo.tsx`) a partir do cabeçalho de acheiarquivos.com.br
+  visto na gravação da página; a palavra “Achei Arquivos” segue o site (creme + vermelho).
+  Trocar pelo SVG oficial, se houver.
+- **Modelos**: os cartões das cenas 2 e 6 e a peça da demonstração usam os 5 renders oficiais do
+  catálogo enviados pela cliente.
+- **Troféu 3D**: construído a partir do **vetor do modelo “asas”** (mesmos contornos do desenho 2D):
+  chapa preta extrudada com borda de MDF, asas douradas com a textura da própria foto, disco com o
+  texto editado na demonstração (“CAMPEÃO · COPA DO CLIENTE · 2026”, exemplo ilustrativo) e base
+  sextavada em dois andares modelada em 3D.
+- **Editor**: interface abstrata com o rótulo **“Demonstração ilustrativa”**; o ícone verde é o que a
+  cliente enviou para representar o Corel. Arquivo mostrado: `modelo-asas.cdr` (formato `.CDR`
+  do briefing; nenhuma versão de software é citada).
+- **Preço**: “R$ 8,99 por modelo” entra na cena 5 porque aparece na página atual do catálogo
+  (“Cada projeto sai por R$ 8,99”, gravação de 28/10/2026). Retirar se a oferta mudar.
+- **Página do site**: cena 7 mostra um trecho real da página do catálogo dentro de um celular, que se
+  transforma no botão **Saiba Mais**, agora na parte de baixo do quadro (centro em y ≈ 1427).
+- **Lata**: ilustrativa, vermelha lisa, sem marca de terceiros.
 - **“Saiba Mais”** é só chamada visual; o clique é configurado na plataforma do anúncio. O endereço
   `acheiarquivos.com.br` fica na cartela final.

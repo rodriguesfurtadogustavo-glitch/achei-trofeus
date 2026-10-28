@@ -6,6 +6,7 @@ import {Presenter} from './components/Presenter';
 import {Captions} from './components/Captions';
 import {EndCard} from './components/EndCard';
 import {AudioMix} from './components/AudioMix';
+import {Grain} from './components/Grain';
 import {Scene1} from './scenes/Scene1';
 import {CollectionToFile, Scene2} from './scenes/Scene2';
 import {Scene3} from './scenes/Scene3';
@@ -30,6 +31,7 @@ export const AcheiArquivos: React.FC = () => (
 		<CollectionToFile />
 		<Captions />
 		<EndCard />
+		<Grain />
 		<AudioMix />
 	</AbsoluteFill>
 );

@@ -1,8 +1,8 @@
 import React from 'react';
-import {useCurrentFrame} from 'remotion';
+import {Img, interpolateColors, staticFile, useCurrentFrame} from 'remotion';
 import {BRAND, CLIPS, CUE} from '../config';
 import {easeIn, easeInOut, easeOut, mix, prog} from '../lib/anim';
-import {CatalogCard} from '../components/CatalogCard';
+import {MODELS, PhotoCard} from '../components/PhotoCard';
 import {FullFrameSvg, LaserPath} from '../components/Laser';
 import {FileCard, MorphBox, lerpRect, Rect} from '../components/FileCard';
 import {Words} from '../components/Title';
@@ -41,15 +41,15 @@ const LowerThird: React.FC = () => {
 	);
 };
 
-const PANEL: Rect = {x: 36, y: 150, w: 1008, h: 1180, r: 34};
+const PANEL: Rect = {x: 36, y: 150, w: 1008, h: 1070, r: 34};
 const CARDS = [
-	{src: 'catalog/copa.webp', x: -340, z: -140, y: 30, rot: 10},
-	{src: 'catalog/judo.webp', x: 0, z: 90, y: -10, rot: 0},
-	{src: 'catalog/roxo.webp', x: 340, z: -60, y: 40, rot: -10},
+	{src: MODELS.bola, x: -350, z: -140, y: 30, rot: 10},
+	{src: MODELS.asas, x: 0, z: 90, y: -10, rot: 0},
+	{src: MODELS.onda, x: 350, z: -60, y: 40, rot: -10},
 ];
-const CARD_W = 310;
-const CARD_H = 420;
-const CARD_TOP = 600;
+const CARD_W = 330;
+const CARD_H = 452;
+const CARD_TOP = 610;
 
 export const CollectionInsert: React.FC = () => {
 	const f = useCurrentFrame();
@@ -67,7 +67,8 @@ export const CollectionInsert: React.FC = () => {
 	return (
 		<>
 			<div style={{position: 'absolute', inset: 0, clipPath: `inset(${PANEL.y}px 0 ${1920 - panelBottom}px 0)`}}>
-				<MorphBox rect={PANEL} color={BRAND.colors.bg} style={{boxShadow: '0 30px 80px rgba(0,0,0,0.4)'}}>
+				{/* painel de vidro fosco: a apresentadora continua presente, desfocada, atrás da coleção */}
+				<MorphBox rect={PANEL} color="rgba(11,11,12,0.74)" style={{boxShadow: '0 30px 80px rgba(0,0,0,0.4)', backdropFilter: 'blur(26px) saturate(1.1)', border: '1.5px solid rgba(245,242,237,0.10)'}}>
 					<div
 						style={{
 							position: 'absolute',
@@ -105,7 +106,7 @@ export const CollectionInsert: React.FC = () => {
 										opacity: t * (isHero ? 1 : 1 - prog(f, cover, 6)),
 									}}
 								>
-									<CatalogCard src={c.src} w={CARD_W} h={CARD_H} glow={isHero ? organize : 0} />
+									<PhotoCard src={c.src} w={CARD_W} h={CARD_H} glow={isHero ? organize : 0} />
 								</div>
 							);
 						})}
@@ -147,7 +148,7 @@ export const CollectionToFile: React.FC = () => {
 		y: CARD_TOP - (CARD_H * (heroScale - 1)) / 2,
 		w: CARD_W * heroScale,
 		h: CARD_H * heroScale,
-		r: CARD_W * 0.09,
+		r: CARD_W * heroScale * 0.085,
 	};
 	const full: Rect = {x: -20, y: -20, w: 1120, h: 1960, r: 0};
 	const file: Rect = {x: 540 - 140, y: 228, w: 280, h: 350, r: 24}; // faixa de cima: rosto livre
@@ -164,7 +165,10 @@ export const CollectionToFile: React.FC = () => {
 	const boxOpacity = 1 - fileOpacity;
 	return (
 		<div style={{position: 'absolute', inset: 0, opacity: 1 - prog(f, end - 6, 6)}}>
-			<MorphBox rect={rect} color={BRAND.colors.surface} style={{opacity: boxOpacity}} />
+			{/* o cartão do modelo cresce, a foto se dissolve no escuro e o quadro vira o ícone do arquivo */}
+			<MorphBox rect={rect} color={interpolateColors(grow, [0, 1], ['#E9DCCB', BRAND.colors.surface])} style={{opacity: boxOpacity}}>
+				{grow < 1 ? <Img src={staticFile(MODELS.asas)} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.12)', opacity: 1 - grow}} /> : null}
+			</MorphBox>
 			{fileOpacity > 0 ? (
 				<div style={{position: 'absolute', left: rect.x, top: rect.y, opacity: fileOpacity}}>
 					<FileCard w={rect.w} h={rect.h} style={{filter: 'drop-shadow(0 18px 30px rgba(0,0,0,0.35))'}} />

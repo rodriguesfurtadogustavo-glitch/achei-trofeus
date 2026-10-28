@@ -5,7 +5,7 @@ import {easeIn, easeOut, prog} from '../lib/anim';
 import {FileCard} from '../components/FileCard';
 import {FullFrameSvg, LaserPath} from '../components/Laser';
 import {TitleCard, Words} from '../components/Title';
-import {VectorDrawing} from '../components/VectorDrawing';
+import {ModelDrawing} from '../components/ModelDrawing';
 
 // Cena 3 — deixar claro o que está sendo comprado.
 
@@ -40,8 +40,9 @@ const FileToDrawing: React.FC = () => {
 					opacity: prog(f, s + 8, 8),
 					transform: `scale(${0.9 + 0.1 * prog(f, s + 8, 8)})`,
 				}}
-			>
-				<VectorDrawing left={box.w / 2 - (290 * 760) / 1330 / 2} top={20} height={290} draw={draw} nodes={0} select={0} text="" sub="" caret={false} fill={0} />
+			/>
+			<div style={{position: 'absolute', inset: 0, opacity: prog(f, s + 8, 8)}}>
+				<ModelDrawing place={{cx: box.x + box.w / 2, top: box.y + 22, height: box.h - 44}} draw={draw} discText={0} strokeWidth={2.2} />
 			</div>
 			<FullFrameSvg>
 				<LaserPath d={`M ${card.x + card.w + 14} ${card.y + card.h * 0.42} C ${560} ${card.y + 40}, ${600} ${box.y + box.h * 0.75}, ${box.x - 10} ${box.y + box.h * 0.5}`} progress={line} width={6} />

@@ -1,11 +1,13 @@
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
-import {BRAND, CAPTIONS} from '../config';
+import {BRAND, CAPTIONS, CUE} from '../config';
 import {prog} from '../lib/anim';
 
 /** Legendas em blocos curtos; a palavra principal recebe a cor de laser. */
-export const Captions: React.FC<{y?: number}> = ({y = 1435}) => {
+export const Captions: React.FC = () => {
 	const f = useCurrentFrame();
+	// durante o “Saiba Mais” (botão na base) a legenda sobe para o peito
+	const y = f >= CUE.s7.saiba - 8 ? 1238 : 1435;
 	let active = -1;
 	for (let i = 0; i < CAPTIONS.length; i++) {
 		if (CAPTIONS[i].from <= f && f < CAPTIONS[i].to) active = i;

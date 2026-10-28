@@ -3,7 +3,7 @@ import {measureText} from '@remotion/layout-utils';
 import {useCurrentFrame} from 'remotion';
 import {BRAND, CLIPS, CUE} from '../config';
 import {easeIn, easeInOut, easeOut, prog} from '../lib/anim';
-import {CatalogCard} from '../components/CatalogCard';
+import {MODELS, PhotoCard} from '../components/PhotoCard';
 import {FullFrameSvg, LaserPath} from '../components/Laser';
 import {Words} from '../components/Title';
 
@@ -12,10 +12,10 @@ const L2 = 76;
 const m = (t: string, size: number) => measureText({text: t, fontFamily: 'Bricolage Grotesque', fontWeight: '800', fontSize: size, letterSpacing: '-0.02em'}).width;
 
 const SIDE = [
-	{src: 'catalog/futebol.webp', x: -70, y: 930, w: 190, speed: 0.55, z: 1},
-	{src: 'catalog/tenis.webp', x: 935, y: 960, w: 190, speed: -0.6, z: 1},
-	{src: 'catalog/copa.webp', x: 34, y: 1185, w: 140, speed: 0.3, z: 0.6},
-	{src: 'catalog/queimada.webp', x: 930, y: 1215, w: 140, speed: -0.35, z: 0.6},
+	{src: MODELS.v, x: -60, y: 930, w: 190, speed: 0.55, z: 1},
+	{src: MODELS.chama, x: 930, y: 960, w: 190, speed: -0.6, z: 1},
+	{src: MODELS.bola, x: 34, y: 1190, w: 140, speed: 0.3, z: 0.6},
+	{src: MODELS.onda, x: 926, y: 1220, w: 140, speed: -0.35, z: 0.6},
 ];
 
 export const Scene6: React.FC = () => {
@@ -45,7 +45,7 @@ export const Scene6: React.FC = () => {
 				const drift = (f - start) * c.speed;
 				return (
 					<div key={c.src} style={{position: 'absolute', left: c.x + drift + (c.speed > 0 ? -1 : 1) * (1 - t) * 120, top: c.y, opacity: t * (1 - exit) * (0.65 + 0.35 * c.z)}}>
-						<CatalogCard src={c.src} w={c.w} h={c.w * 1.3} />
+						<PhotoCard src={c.src} w={c.w} h={c.w * 1.3} />
 					</div>
 				);
 			})}

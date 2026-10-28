@@ -1,8 +1,6 @@
 import React from 'react';
 import {BRAND} from '../config';
-import {JUDO_LAYERS} from '../data/judoPaths';
-
-const OUTLINE = JUDO_LAYERS.l1.paths[0].d;
+import {AXIS_X, BODY_FILL, GOLD_OUTLINES, MODEL_TOP} from '../lib/model';
 
 /**
  * Cartão de arquivo: folha com dobra no canto, espessura fina e etiqueta `.CDR`.
@@ -21,16 +19,19 @@ export const FileCard: React.FC<{
 	const body = `M ${r} 0 L ${w - fold} 0 L ${w} ${fold} L ${w} ${h - r} Q ${w} ${h} ${w - r} ${h} L ${r} ${h} Q 0 ${h} 0 ${h - r} L 0 ${r} Q 0 0 ${r} 0 Z`;
 	const badgeW = w * 0.52;
 	const badgeH = h * 0.15;
-	// ícone: contorno real do troféu do catálogo, reduzido
-	const iconH = h * 0.42;
-	const iconScale = iconH / 1018;
+	// ícone: o próprio modelo do catálogo (vetor), reduzido
+	const iconH = h * 0.44;
+	const iconScale = iconH / (416 - MODEL_TOP);
 	return (
 		<svg width={w + depth} height={h + depth} viewBox={`0 0 ${w + depth} ${h + depth}`} style={{overflow: 'visible', ...style}}>
 			<path d={body} transform={`translate(${depth} ${depth})`} fill="#B9B0A3" />
 			<path d={body} fill={BRAND.colors.text} />
 			<path d={`M ${w - fold} 0 L ${w - fold} ${fold - r * 0.4} Q ${w - fold} ${fold} ${w - fold + r * 0.4} ${fold} L ${w} ${fold} Z`} fill="#D9D1C5" />
-			<g transform={`translate(${w * 0.5 - 380 * iconScale} ${h * 0.14}) scale(${iconScale})`} opacity={iconOpacity}>
-				<path d={OUTLINE} fill="none" stroke={BRAND.colors.red} strokeWidth={2.6 / iconScale} strokeLinejoin="round" />
+			<g transform={`translate(${w * 0.5 - AXIS_X * iconScale} ${h * 0.12 - MODEL_TOP * iconScale}) scale(${iconScale})`} opacity={iconOpacity}>
+				{GOLD_OUTLINES.map((d, i) => (
+					<path key={i} d={d} fill="#D9AE45" />
+				))}
+				<path d={BODY_FILL} fill="none" stroke={BRAND.colors.red} strokeWidth={2.4 / iconScale} strokeLinejoin="round" fillRule="evenodd" />
 			</g>
 			<rect x={w * 0.12} y={h * 0.62} width={w * 0.6} height={Math.max(2, h * 0.022)} rx={2} fill="#CFC7BB" />
 			<rect x={w * 0.12} y={h * 0.67} width={w * 0.42} height={Math.max(2, h * 0.022)} rx={2} fill="#CFC7BB" />

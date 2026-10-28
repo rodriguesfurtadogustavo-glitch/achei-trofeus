@@ -1,25 +1,23 @@
 import React from 'react';
-import {useCurrentFrame} from 'remotion';
+import {Img, staticFile, useCurrentFrame} from 'remotion';
 import {BRAND, CUE} from '../config';
-import {easeIn, easeInOut, easeOut, mix, prog, pulse} from '../lib/anim';
+import {easeIn, easeInOut, easeOut, mix, prog, pulse, settle} from '../lib/anim';
+import {DISC, DISC_TEXT, Placement, placementTransform} from '../lib/model';
 import {FileCard, MorphBox, lerpRect, Rect} from '../components/FileCard';
 import {FullFrameSvg, LaserPath} from '../components/Laser';
+import {ModelDrawing} from '../components/ModelDrawing';
 import {Words} from '../components/Title';
-import {TROPHY_SCREEN, Trophy3D} from '../components/Trophy3D';
-import {VectorDrawing} from '../components/VectorDrawing';
+import {TROPHY_PLACE, Trophy3D} from '../components/Trophy3D';
 import {NEGOCIO_CARD} from './Scene3';
 
-// Cena 4 — demonstração principal: arquivo → edição → peça em MDF.
+// Cena 4 — demonstração principal: arquivo → abre no editor → edição → peça em MDF.
 
 export const PANEL: Rect = {x: 60, y: 796, w: 960, h: 524, r: 30};
 const FULL: Rect = {x: 0, y: 0, w: 1080, h: 1920, r: 0};
 const BAR_H = 56;
 const TOOL_W = 64;
-
-const OLD_TEXT = 'NOME DO EVENTO';
-const NEW_TEXT = 'COPA DO SEU CLIENTE';
-const SUB = '2026';
-export const PLAQUE_TEXT: [string, string] = [NEW_TEXT, SUB];
+const FILE_NAME = 'modelo-asas.cdr';
+const COREL_ICON = 'ui/corel-icon.png';
 
 const Toolbar: React.FC<{active: number}> = ({active}) => {
 	const icons = [
@@ -47,6 +45,22 @@ const Cursor: React.FC<{x: number; y: number; press: number}> = ({x, y, press}) 
 	</svg>
 );
 
+/** Texto do disco durante a edição: apaga o texto provisório e digita o do cliente. */
+const discLines = (f: number, start: number) => {
+	const before = DISC_TEXT.before.join('\n');
+	const after = DISC_TEXT.after.join('\n');
+	const delStart = start + 6;
+	const typeStart = start + 11;
+	if (f < delStart) return {lines: DISC_TEXT.before, muted: true};
+	if (f < typeStart) return {lines: before.slice(0, Math.max(0, before.length - Math.floor((f - delStart) * 3.5))).split('\n'), muted: true};
+	return {lines: after.slice(0, Math.min(after.length, Math.floor((f - typeStart) / 1.2))).split('\n'), muted: false};
+};
+
+const discOnScreen = (p: Placement) => {
+	const {s, x0, y0} = placementTransform(p);
+	return {x: x0 + DISC.cx * s, y: y0 + DISC.cy * s, r: DISC.r * s};
+};
+
 export const Scene4: React.FC = () => {
 	const f = useCurrentFrame();
 	const {toPanel} = CUE.s3;
@@ -58,53 +72,52 @@ export const Scene4: React.FC = () => {
 	const toFull = prog(f, mdf, 10, easeInOut);
 	let rect = lerpRect(NEGOCIO_CARD, PANEL, toP);
 	if (f >= mdf) rect = lerpRect(PANEL, FULL, toFull);
-	const retract = prog(f, back, 12, easeInOut); // painel cheio sai pela base, revelando a apresentadora
+	const retract = prog(f, back, 12, easeInOut); // a tela cheia sai por cima, revelando a apresentadora
 	const clipTop = retract * 1920;
 
-	// ---------- desenho
+	// ---------- posições do desenho: no editor → à direita do título → peça em tela cheia
 	const canvasX = PANEL.x + TOOL_W;
 	const canvasW = PANEL.w - TOOL_W;
-	const baseH = 440;
-	const baseW = (baseH * 760) / 1330;
-	const posA = {left: canvasX + canvasW / 2 - baseW / 2, top: PANEL.y + BAR_H + 14, height: baseH};
-	const posB = {left: PANEL.x + PANEL.w - 40 - (420 * 760) / 1330, top: PANEL.y + BAR_H + 24, height: 420};
-	const posC = {left: TROPHY_SCREEN.left, top: TROPHY_SCREEN.top, height: TROPHY_SCREEN.height};
+	const posA: Placement = {cx: canvasX + canvasW / 2, top: PANEL.y + BAR_H + 18, height: 428};
+	const posB: Placement = {cx: PANEL.x + PANEL.w - 150, top: PANEL.y + BAR_H + 26, height: 412};
 	const side = prog(f, sem - 4, 12, easeInOut) * (1 - prog(f, porque, 10, easeInOut));
 	const big = prog(f, mdf, 10, easeInOut);
-	const pos = {
-		left: mix(mix(posA.left, posB.left, side), posC.left, big),
-		top: mix(mix(posA.top, posB.top, side), posC.top, big),
-		height: mix(mix(posA.height, posB.height, side), posC.height, big),
+	const place: Placement = {
+		cx: mix(mix(posA.cx, posB.cx, side), TROPHY_PLACE.cx, big),
+		top: mix(mix(posA.top, posB.top, side), TROPHY_PLACE.top, big),
+		height: mix(mix(posA.height, posB.height, side), TROPHY_PLACE.height, big),
 	};
 
-	const draw = prog(f, recebe + 8, 30, easeOut);
-	const nodes = prog(f, abre + 2, 8) * (1 - prog(f, edita + 38, 8));
+	// ---------- arquivo chega → ícone do editor abre o arquivo → desenho vetorial
+	const iconAt = abre - 8;
+	const fileIn = prog(f, recebe - 8, 12, easeOut);
+	const fileToIcon = prog(f, iconAt + 2, 9, easeInOut);
+	const iconPop = settle(f, iconAt, 11);
+	const iconToTab = prog(f, abre + 3, 11, easeInOut);
+	const chrome = prog(f, abre + 3, 10) * (1 - prog(f, mdf, 6));
+	const label = prog(f, toPanel + 12, 8) * (1 - prog(f, mdf, 6));
+	const draw = prog(f, abre + 4, 26, easeOut);
+	const nodes = prog(f, abre + 16, 8) * (1 - prog(f, edita + 38, 8));
 	const select = prog(f, edita, 6) * (1 - prog(f, edita + 38, 8));
-	const delStart = edita + 6;
-	const typeStart = edita + 11;
-	let text = OLD_TEXT;
-	if (f >= delStart) text = OLD_TEXT.slice(0, Math.max(0, OLD_TEXT.length - Math.floor((f - delStart) * 3.5)));
-	if (f >= typeStart) text = NEW_TEXT.slice(0, Math.min(NEW_TEXT.length, Math.floor((f - typeStart) / 1.25)));
+	const {lines, muted} = discLines(f, edita);
 	const caret = f >= edita + 4 && f < edita + 40 && Math.floor((f - edita) / 6) % 2 === 0;
 	const fill = prog(f, porque, 10);
 	const start3D = mdf + 10;
-	const lineOpacity = 1 - prog(f, start3D, 10);
+	const show3D = prog(f, start3D, 8);
+	const tool = f >= edita - 2 ? 2 : f >= abre + 16 ? 1 : 0;
 
-	// ---------- arquivo recebido
-	const fileIn = prog(f, recebe - 8, 10, easeOut);
-	const fileOpen = prog(f, recebe + 6, 12, easeInOut);
+	const center = {x: canvasX + canvasW / 2, y: PANEL.y + BAR_H + (PANEL.h - BAR_H) / 2};
+	const tab = {x: PANEL.x + TOOL_W + 30, y: PANEL.y + BAR_H / 2};
+	const iconSize = mix(132, 30, iconToTab) * Math.min(1.08, iconPop);
+	const iconPos = {x: mix(center.x, tab.x, iconToTab), y: mix(center.y, tab.y, iconToTab)};
+	const filePos = {x: mix(center.x, center.x, fileToIcon), y: mix(center.y, center.y, fileToIcon)};
 
-	// ---------- interface
-	const chrome = prog(f, abre - 4, 8) * (1 - prog(f, mdf, 6));
-	const label = prog(f, toPanel + 12, 8) * (1 - prog(f, mdf, 6));
-	const tool = f >= edita - 2 ? 2 : f >= abre + 6 ? 1 : 0;
-
-	// ---------- cursor
-	const cur = {
-		x: mix(mix(canvasX + 120, posA.left + baseW * 0.85, prog(f, abre, 14, easeInOut)), posA.left + baseW * 0.58, prog(f, edita - 10, 10, easeInOut)),
-		y: mix(mix(PANEL.y + 140, PANEL.y + 220, prog(f, abre, 14, easeInOut)), posA.top + baseH * 0.9, prog(f, edita - 10, 10, easeInOut)),
-	};
-	const cursorOpacity = prog(f, abre, 6) * (1 - prog(f, edita + 40, 6));
+	// ---------- cursor até o disco
+	const discA = discOnScreen(posA);
+	const curStart = {x: canvasX + canvasW * 0.18, y: PANEL.y + 170};
+	const curT = prog(f, edita - 12, 11, easeInOut);
+	const cur = {x: mix(curStart.x, discA.x + discA.r * 0.25, curT), y: mix(curStart.y, discA.y + discA.r * 0.1, curT)};
+	const cursorOpacity = prog(f, abre + 12, 6) * (1 - prog(f, edita + 40, 6));
 
 	// ---------- título “SEM COMEÇAR DO ZERO”
 	const tIn = prog(f, sem, 8);
@@ -119,13 +132,13 @@ export const Scene4: React.FC = () => {
 					style={{
 						position: 'absolute',
 						inset: 0,
-						background: `radial-gradient(60% 40% at 50% ${inPanel ? 60 : 52}%, rgba(226,35,26,${inPanel ? 0.1 : 0.2}), rgba(11,11,12,0) 70%)`,
+						background: `radial-gradient(60% 40% at 50% ${inPanel ? 60 : 50}%, rgba(226,35,26,${inPanel ? 0.1 : 0.22}), rgba(11,11,12,0) 70%)`,
 						opacity: prog(f, toPanel + 8, 8),
 					}}
 				/>
 			</MorphBox>
 
-			{/* grade do documento + interface ilustrativa */}
+			{/* grade do documento + interface ilustrativa (sem marca de terceiros) */}
 			{f >= toPanel + 8 ? (
 				<div
 					style={{
@@ -151,51 +164,58 @@ export const Scene4: React.FC = () => {
 						}}
 					/>
 					<div style={{position: 'absolute', left: 0, right: 0, top: 0, height: BAR_H, background: BRAND.colors.surface, opacity: chrome, display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(245,242,237,0.08)'}}>
-						<div style={{marginLeft: TOOL_W + 8, padding: '8px 18px', borderRadius: 10, background: 'rgba(245,242,237,0.06)', fontFamily: BRAND.fonts.ui, fontWeight: 600, fontSize: 24, color: BRAND.colors.text, display: 'flex', gap: 10, alignItems: 'center'}}>
-							<span style={{color: BRAND.colors.laser, fontWeight: 800}}>●</span> modelo-judo.cdr
-						</div>
+						<div style={{marginLeft: TOOL_W + 52, padding: '8px 18px', borderRadius: 10, background: 'rgba(245,242,237,0.06)', fontFamily: BRAND.fonts.ui, fontWeight: 600, fontSize: 24, color: BRAND.colors.text}}>{FILE_NAME}</div>
 					</div>
 					<div style={{position: 'absolute', left: 0, top: BAR_H, bottom: 0, width: TOOL_W, background: BRAND.colors.surface, opacity: chrome, borderRight: '1px solid rgba(245,242,237,0.08)', transform: `translateX(${(chrome - 1) * TOOL_W}px)`}}>
 						<Toolbar active={tool} />
 					</div>
-					<div style={{position: 'absolute', right: 18, top: 14, fontFamily: BRAND.fonts.ui, fontWeight: 500, fontSize: 21, color: BRAND.colors.muted, opacity: label, letterSpacing: '0.01em'}}>
-						Demonstração ilustrativa
-					</div>
+					<div style={{position: 'absolute', right: 18, top: 14, fontFamily: BRAND.fonts.ui, fontWeight: 500, fontSize: 21, color: BRAND.colors.muted, opacity: label, letterSpacing: '0.01em'}}>Demonstração ilustrativa</div>
 				</div>
 			) : null}
 
-			{/* arquivo chegando e abrindo */}
-			{f >= recebe - 8 && fileOpen < 1 ? (
+			{/* arquivo recebido */}
+			{f >= recebe - 8 && fileToIcon < 1 ? (
 				<div
 					style={{
 						position: 'absolute',
-						left: canvasX + canvasW / 2 - 80,
-						top: PANEL.y + 150 + (1 - fileIn) * -160,
-						opacity: fileIn * (1 - fileOpen),
-						transform: `scale(${1 + fileOpen * 0.5})`,
+						left: filePos.x - 80,
+						top: filePos.y - 102 - (1 - fileIn) * 150,
+						opacity: fileIn * (1 - fileToIcon),
+						transform: `scale(${1 - 0.7 * fileToIcon}) rotate(${(1 - fileIn) * -6}deg)`,
 					}}
 				>
 					<FileCard w={160} h={204} style={{filter: 'drop-shadow(0 14px 22px rgba(0,0,0,0.5))'}} />
+					<div style={{marginTop: 14, textAlign: 'center', fontFamily: BRAND.fonts.ui, fontWeight: 600, fontSize: 22, color: BRAND.colors.text, opacity: prog(f, recebe + 6, 8) * 0.85}}>{FILE_NAME}</div>
 				</div>
 			) : null}
 
-			{f >= recebe + 8 ? (
-				<VectorDrawing
-					left={pos.left}
-					top={pos.top}
-					height={pos.height}
-					draw={draw}
-					nodes={nodes}
-					select={select}
-					text={text}
-					sub={SUB}
-					caret={caret}
-					fill={fill * (1 - prog(f, start3D, 10))}
-					lineOpacity={lineOpacity}
+			{/* ícone do editor: abre o arquivo e vai para a aba */}
+			{f >= iconAt && f < mdf ? (
+				<Img
+					src={staticFile(COREL_ICON)}
+					style={{
+						position: 'absolute',
+						left: iconPos.x - iconSize / 2,
+						top: iconPos.y - iconSize / 2,
+						width: iconSize,
+						height: iconSize,
+						opacity: prog(f, iconAt, 4) * (1 - prog(f, mdf - 6, 6)),
+						filter: iconToTab < 1 ? `drop-shadow(0 12px 24px rgba(0,0,0,${0.5 * (1 - iconToTab)}))` : undefined,
+					}}
 				/>
 			) : null}
 
-			{cursorOpacity > 0 ? <div style={{opacity: cursorOpacity}}><Cursor x={cur.x} y={cur.y} press={pulse(f, edita - 1, 6)} /></div> : null}
+			{f >= abre + 4 ? (
+				<div style={{position: 'absolute', inset: 0, opacity: 1 - show3D}}>
+					<ModelDrawing place={place} draw={draw} nodes={nodes} select={select} lines={lines} caret={caret} muted={muted} fill={fill} />
+				</div>
+			) : null}
+
+			{cursorOpacity > 0 ? (
+				<div style={{opacity: cursorOpacity}}>
+					<Cursor x={cur.x} y={cur.y} press={pulse(f, edita - 1, 6)} />
+				</div>
+			) : null}
 
 			{/* SEM COMEÇAR DO ZERO */}
 			{f >= sem && f < porque + 2 ? (
@@ -207,10 +227,10 @@ export const Scene4: React.FC = () => {
 				</div>
 			) : null}
 
-			{/* peça em MDF (3D) */}
+			{/* peça em MDF (3D), construída do mesmo vetor */}
 			{f >= start3D ? (
-				<div style={{position: 'absolute', inset: 0, transform: `translateY(${retract * 200}px)`}}>
-					<Trophy3D start={start3D} plaque={PLAQUE_TEXT} />
+				<div style={{position: 'absolute', inset: 0, opacity: show3D, transform: `translateY(${retract * 200}px)`}}>
+					<Trophy3D start={start3D} />
 				</div>
 			) : null}
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import {useCurrentFrame} from 'remotion';
 import {BRAND, CLIPS, CUE} from '../config';
-import {easeInOut, prog, pulse} from '../lib/anim';
+import {easeInOut, life, prog, pulse} from '../lib/anim';
 import {FileCard, MorphBox, lerpRect, Rect} from '../components/FileCard';
 import {CAN_CENTER, CAN_DISC_RADIUS, SodaCan3D} from '../components/SodaCan3D';
 import {TitleCard, Words} from '../components/Title';
@@ -30,6 +30,15 @@ export const Scene5: React.FC = () => {
 					<Words text="UMA COCA" start={coca - 2} size={102} align="left" emphasis={{COCA: {color: BRAND.colors.laser}}} />
 				</div>
 			</TitleCard>
+			{/* preço confirmado na página do catálogo (“Cada projeto sai por R$ 8,99”) */}
+			{f >= coca + 6 && f < flatten + 10 ? (
+				<div style={{position: 'absolute', left: 96, top: 498, opacity: life(f, coca + 6, flatten + 10, 8, 6), transform: `translateY(${(1 - prog(f, coca + 6, 9)) * 18}px)`}}>
+					<div style={{display: 'inline-flex', alignItems: 'baseline', gap: 12, padding: '12px 28px 15px', borderRadius: 999, background: BRAND.colors.red, color: BRAND.colors.text, boxShadow: '0 14px 30px rgba(226,35,26,0.35)'}}>
+						<span style={{fontFamily: BRAND.fonts.title, fontWeight: 800, fontSize: 50, letterSpacing: '-0.01em'}}>R$ 8,99</span>
+						<span style={{fontFamily: BRAND.fonts.ui, fontWeight: 600, fontSize: 30}}>por modelo</span>
+					</div>
+				</div>
+			) : null}
 			<SodaCan3D enter={preço + 2} coca={coca} flatten={flatten + 2} />
 			{f >= discOn ? (
 				<div style={{position: 'absolute', inset: 0, opacity: 1 - out}}>
