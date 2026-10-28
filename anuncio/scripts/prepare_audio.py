@@ -54,20 +54,30 @@ clips = EDIT["clips"]
 parts = []
 tmp = os.path.join(OUT, "_take.wav")
 for i, c in enumerate(clips):
-    t0, t1 = c["in"] / FPS, c["out"] / FPS
-    dur = t1 - t0
-    chain = (f"atrim=start={t0:.6f}:end={t1:.6f},asetpts=PTS-STARTPTS,"
-             "highpass=f=80,lowpass=f=15000,afftdn=nr=8:nf=-50:tn=1,"
-             "acompressor=threshold=-22dB:ratio=2.5:attack=8:release=120:makeup=1,"
-             f"afade=t=in:st=0:d={FADE},afade=t=out:st={dur - FADE:.6f}:d={FADE}")
-    x = ffmpeg_pcm(["-i", os.path.join(ROOT, "public", c["file"]), "-af", chain])
-    n = round(dur * SR)
-    x = np.pad(x, ((0, max(0, n - len(x))), (0, 0)))[:n]
-    write_wav("_take.wav", x)
+    segs = []
+    for a, b in c["segments"]:
+        t0, t1 = a / FPS, b / FPS
+        dur = t1 - t0
+        # trata um pouco antes/depois do trecho para o redutor de ruído não “ligar” na emenda
+        pad = min(0.25, t0)
+        chain = (f"atrim=start={t0 - pad:.6f}:end={t1 + 0.25:.6f},asetpts=PTS-STARTPTS,"
+                 "highpass=f=80,lowpass=f=15000,afftdn=nr=8:nf=-50:tn=1,"
+                 "acompressor=threshold=-22dB:ratio=2.5:attack=8:release=120:makeup=1")
+        x = ffmpeg_pcm(["-i", os.path.join(ROOT, "public", c["file"]), "-af", chain])
+        n = (b - a) * SR // FPS
+        s0 = round(pad * SR)
+        x = np.pad(x, ((0, max(0, s0 + n - len(x))), (0, 0)))[s0:s0 + n].copy()
+        f = round(FADE * SR)
+        ramp = np.linspace(0, 1, f)[:, None]
+        x[:f] *= ramp
+        x[-f:] *= ramp[::-1]
+        segs.append(x)
+    take = np.concatenate(segs)
+    write_wav("_take.wav", take)
     measured = lufs(["-i", tmp])
     gain = 10 ** ((VOICE_TARGET - measured) / 20)
-    print(f"take {i + 1}: {measured:6.1f} LUFS -> ganho {20 * np.log10(gain):+.1f} dB, {n} amostras ({dur:.3f}s)")
-    parts.append(x * gain)
+    print(f"take {i + 1}: {len(segs)} trecho(s), {measured:6.1f} LUFS -> ganho {20 * np.log10(gain):+.1f} dB, {len(take) / SR:.3f}s")
+    parts.append(take * gain)
 os.remove(tmp)
 voice = np.concatenate(parts)
 voice = np.pad(voice, ((0, round(EDIT["endCardFrames"] / FPS * SR)), (0, 0)))
@@ -80,21 +90,25 @@ BPM = 110
 BEAT = 60 / BPM
 N = int(TOTAL * SR) + SR
 t_all = np.arange(N) / SR
-music = np.zeros((N, 2))
 
-starts = np.cumsum([0] + [c["out"] - c["in"] for c in clips]) / FPS
+starts = np.cumsum([0] + [sum(b - a for a, b in c["segments"]) for c in clips]) / FPS
 S = {f"s{i + 1}": starts[i] for i in range(7)}
 S["end"] = starts[7]
 
 
-def add(sig, at, gain=1.0, pan=0.0):
+# barramentos: bateria seca, harmonia (pad/teclas/melodia, com reverb e “respiração” no bumbo), baixo
+BUS = {"drums": np.zeros((N, 2)), "keys": np.zeros((N, 2)), "bass": np.zeros((N, 2)), "fx": np.zeros((N, 2))}
+KICKS = []
+
+
+def add(sig, at, gain=1.0, pan=0.0, bus="drums"):
     i = int(at * SR)
     if i >= N:
         return
     sig = sig[: N - i]
     l, r = np.cos((pan + 1) * np.pi / 4), np.sin((pan + 1) * np.pi / 4)
-    music[i:i + len(sig), 0] += sig * gain * l * 1.414
-    music[i:i + len(sig), 1] += sig * gain * r * 1.414
+    BUS[bus][i:i + len(sig), 0] += sig * gain * l * 1.414
+    BUS[bus][i:i + len(sig), 1] += sig * gain * r * 1.414
 
 
 def env(n, a, d):
@@ -189,49 +203,107 @@ def impact():
     return sub * 0.8 + noise * 0.3
 
 
+def epiano(m, dur=0.5):
+    n = int(dur * SR); t = np.arange(n) / SR
+    f = note(m)
+    s = np.sin(2 * np.pi * f * t + 0.6 * np.sin(2 * np.pi * f * 2 * t) * np.exp(-t / 0.15))
+    s += 0.25 * np.sin(2 * np.pi * f * 4.01 * t) * np.exp(-t / 0.05)
+    return s * env(n, 0.003, 0.28)
+
+
+def bell(m, dur=0.9):
+    n = int(dur * SR); t = np.arange(n) / SR
+    f = note(m)
+    s = np.sin(2 * np.pi * f * t) + 0.35 * np.sin(2 * np.pi * f * 2 * t) * np.exp(-t / 0.2) + 0.12 * np.sin(2 * np.pi * f * 3.98 * t) * np.exp(-t / 0.08)
+    return s * env(n, 0.004, 0.35)
+
+
 end_t = S["end"]
 nbeats = int(np.ceil(TOTAL / BEAT)) + 1
+# melodia da chamada (Lá menor): uma frase curta por compasso
+HOOK = [(0, 76), (0.5, 74), (1, 72), (2, 71), (2.5, 72), (3, 74)]
 for b in range(nbeats):
     tb = b * BEAT
     if tb >= end_t:
         break
     bar, beat_in_bar = divmod(b, 4)
     ci = bar % 4
+    intro = tb < S["s2"]
     full = tb >= S["s4"]
     build = S["s6"] <= tb < S["s7"]
     peak = tb >= S["s7"]
-    # bumbo: 1 e 3 sempre; quatro no chão a partir da demonstração
+    # bumbo: 1 e 3; quatro no chão a partir da demonstração
     if beat_in_bar in (0, 2) or full:
-        add(kick(), tb, 0.55 if tb < S["s2"] else (0.7 if not full else 0.8))
-    if full and beat_in_bar in (1, 3):
-        add(clap(), tb, 0.45 if not peak else 0.55, pan=0.05)
-    # chimbal em colcheias, semicolcheias na construção e na chamada
+        add(kick(), tb, 0.5 if intro else (0.68 if not full else 0.8))
+        KICKS.append(tb)
+    if (full or S["s2"] <= tb) and beat_in_bar in (1, 3):
+        add(clap(), tb, (0.3 if not full else 0.45) * (1.15 if peak else 1), pan=0.05)
+        add(clap(), tb, 0.12, bus="fx")
+    # chimbal: colcheias; semicolcheias na construção e na chamada
     sub = 4 if (build or peak) else 2
     for s in range(sub):
         add(hat(open_=(s == sub // 2 and beat_in_bar == 3 and sub == 2)), tb + s * BEAT / sub,
-            (0.16 if s % 2 else 0.22) * (1.15 if peak else 1), pan=0.3 if s % 2 else -0.2)
+            (0.14 if s % 2 else 0.2) * (1.15 if peak else 1) * (0.7 if intro else 1), pan=0.3 if s % 2 else -0.2)
     if beat_in_bar == 0:
-        add(pad(CHORDS[ci], BAR + 0.25), tb, 0.55 if tb < S["s6"] else 0.7)
-    if tb >= S["s3"]:
+        add(pad(CHORDS[ci], BAR + 0.25), tb, 0.5 if tb < S["s6"] else 0.62, bus="keys")
+    if tb >= S["s2"]:
         for s in range(2):
-            add(bass(ROOTS[ci] - (12 if s else 0), BEAT / 2), tb + s * BEAT / 2, 0.45)
+            add(bass(ROOTS[ci] - (12 if s else 0), BEAT / 2), tb + s * BEAT / 2, 0.45, bus="bass")
+    # teclas no contratempo (groove leve sob a fala)
+    if S["s2"] <= tb < S["s6"] and beat_in_bar in (1, 3):
+        for m in CHORDS[ci]:
+            add(epiano(m + 12), tb + BEAT / 2, 0.07, pan=0.25, bus="keys")
     if build or peak:
         arp = CHORDS[ci] + [CHORDS[ci][0] + 12]
         for s in range(4):
-            add(pluck(arp[(beat_in_bar * 4 + s) % 4]), tb + s * BEAT / 4, 0.09 if build else 0.12,
-                pan=-0.35 + 0.23 * s)
+            add(pluck(arp[(beat_in_bar * 4 + s) % 4]), tb + s * BEAT / 4, 0.08 if build else 0.1,
+                pan=-0.35 + 0.23 * s, bus="keys")
+    if peak and beat_in_bar == 0:
+        for off, m in HOOK:
+            add(bell(m), tb + off * BEAT, 0.16, pan=0.1, bus="keys")
+            add(bell(m), tb + off * BEAT + BEAT * 0.75, 0.06, pan=-0.4, bus="keys")  # eco
 
-add(riser(1.6), S["s7"] - 1.6, 0.8)
-add(impact(), S["s7"], 0.55)
-# fecho: impacto e acorde final de Am sustentado
-add(impact(), end_t, 0.8)
-add(pad(CHORDS[0], TOTAL - end_t + 0.2), end_t, 0.8)
-add(bass(ROOTS[0] - 12, 1.8), end_t, 0.5)
+add(riser(1.6), S["s7"] - 1.6, 0.7, bus="fx")
+add(impact(), S["s7"], 0.5)
+# fecho: impacto, acorde final de Am e o motivo resolvendo
+add(impact(), end_t, 0.75)
+add(pad(CHORDS[0], TOTAL - end_t + 0.2), end_t, 0.75, bus="keys")
+add(bass(ROOTS[0] - 12, 1.8), end_t, 0.5, bus="bass")
+for off, m in ((0, 81), (0.5, 76), (1, 72), (1.5, 69)):
+    add(bell(m, 1.4), end_t + off * BEAT, 0.14, bus="keys")
+
+# “respiração” no bumbo (sidechain) para pad, teclas e baixo
+t_all = np.arange(N) / SR
+duck = np.ones(N)
+for k in KICKS:
+    i = int(k * SR)
+    seg = np.arange(min(N - i, int(0.45 * SR))) / SR
+    duck[i:i + len(seg)] = np.minimum(duck[i:i + len(seg)], 1 - 0.55 * np.exp(-seg / 0.11))
+BUS["keys"] *= duck[:, None]
+BUS["bass"] *= (1 - 0.6 * (1 - duck))[:, None]
+
+# reverb de sala (convolução com ruído decaindo, estéreo, um pouco abafado)
+ir_n = int(1.7 * SR)
+ir_t = np.arange(ir_n) / SR
+ir = np.stack([onepole_lp(rng.standard_normal(ir_n), 5000) * np.exp(-ir_t / 0.38) for _ in range(2)], axis=1)
+ir[: int(0.012 * SR)] = 0
+ir /= np.sqrt(np.sum(ir ** 2, axis=0))
+send = BUS["keys"] * 0.32 + BUS["fx"]
+wet = np.zeros_like(send)
+L = N + ir_n
+nfft = 1 << (L - 1).bit_length()
+for ch in range(2):
+    wet[:, ch] = np.fft.irfft(np.fft.rfft(send[:, ch], nfft) * np.fft.rfft(ir[:, ch], nfft), nfft)[:N]
+music = BUS["drums"] + BUS["keys"] + BUS["bass"] + BUS["fx"] * 0 + wet * 0.55
+music = np.tanh(1.25 * music / np.max(np.abs(music))) / np.tanh(1.25)
 
 music = music[: int(TOTAL * SR)]
 fade = int(0.35 * SR)
 music[-fade:] *= np.linspace(1, 0, fade)[:, None]
-music *= 10 ** (-6 / 20) / np.max(np.abs(music))
+# nível de referência da trilha (a mixagem em AudioMix.tsx é calibrada para −25 LUFS)
+write_wav("_music.wav", music)
+music *= 10 ** ((-25.0 - lufs(["-i", os.path.join(OUT, "_music.wav")])) / 20)
+os.remove(os.path.join(OUT, "_music.wav"))
 write_wav("music.wav", music)
 print(f"music.wav: {len(music) / SR:.3f}s  cenas: " + ", ".join(f"{k}={v:.2f}s" for k, v in S.items()))
 

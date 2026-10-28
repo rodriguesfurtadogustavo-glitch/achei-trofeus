@@ -1,57 +1,79 @@
 {
-  "_comment": "Dados editoriais da montagem. in = frame de origem de entrada, out = frame de origem de saída (exclusivo), a 30 fps. Os cortes foram conferidos pela energia do áudio: ~0,2-0,4 s antes da primeira sílaba e ~0,2 s depois da última. face = centro do rosto (coordenadas 1080x1920) medido nos takes. Legendas em segundos de origem de cada clipe; hideInVideo = a frase já aparece como título cinético (continua no SRT).",
+  "_comment": "Dados editoriais da montagem. Cada take (clips[i]) tem um ou mais trechos [entrada, saída) em frames de origem a 30 fps; trechos de um mesmo take viram jump cuts disfarçados por uma troca leve de zoom. Cortes medidos pela energia do áudio: ~0,13 s antes da primeira sílaba, ~0,15 s depois da última, pausas internas longas removidas. face = centro do rosto (1080x1920). Legendas em segundos de origem de cada take; hideInVideo = a frase já aparece como título cinético (continua no SRT).",
   "fps": 30,
   "width": 1080,
   "height": 1920,
   "endCardFrames": 60,
   "clips": [
-    {"file": "videos/01-IMG_3418.mp4", "in": 112, "out": 308, "face": {"x": 537, "y": 863}},
-    {"file": "videos/02-IMG_3420.mp4", "in": 86, "out": 336, "face": {"x": 553, "y": 909}},
-    {"file": "videos/03-IMG_3421.mp4", "in": 99, "out": 288, "face": {"x": 537, "y": 913}},
-    {"file": "videos/04-IMG_3423.mp4", "in": 106, "out": 390, "face": {"x": 558, "y": 883}},
-    {"file": "videos/05-IMG_3427.mp4", "in": 25, "out": 138, "face": {"x": 565, "y": 847}},
-    {"file": "videos/06-IMG_3431.mp4", "in": 44, "out": 280, "face": {"x": 554, "y": 844}},
-    {"file": "videos/07-IMG_3432.mp4", "in": 82, "out": 232, "face": {"x": 511, "y": 816}}
+    {
+      "file": "videos/01-IMG_3418.mp4",
+      "face": {"x": 537, "y": 863},
+      "segments": [[120, 160], [169, 308]]
+    },
+    {
+      "file": "videos/02-IMG_3420.mp4",
+      "face": {"x": 553, "y": 909},
+      "segments": [[89, 333]]
+    },
+    {
+      "file": "videos/03-IMG_3421.mp4",
+      "face": {"x": 537, "y": 913},
+      "segments": [[100, 288]]
+    },
+    {
+      "file": "videos/04-IMG_3423.mp4",
+      "face": {"x": 558, "y": 883},
+      "segments": [[113, 387]]
+    },
+    {
+      "file": "videos/05-IMG_3427.mp4",
+      "face": {"x": 565, "y": 847},
+      "segments": [[44, 137]]
+    },
+    {
+      "file": "videos/06-IMG_3431.mp4",
+      "face": {"x": 554, "y": 844},
+      "segments": [[45, 54], [66, 280]]
+    },
+    {
+      "file": "videos/07-IMG_3432.mp4",
+      "face": {"x": 511, "y": 816},
+      "segments": [[91, 144], [151, 232]]
+    }
   ],
   "captions": [
     {"clip": 0, "from": 4.13, "to": 5.72, "text": "Ei, você que"},
     {"clip": 0, "from": 5.72, "to": 6.98, "text": "já vende troféus", "hl": "troféus", "hideInVideo": true},
-    {"clip": 0, "from": 6.98, "to": 7.90, "text": "ou quer começar", "hideInVideo": true},
-    {"clip": 0, "from": 7.90, "to": 8.74, "text": "a produzir,", "hl": "produzir"},
+    {"clip": 0, "from": 6.98, "to": 7.9, "text": "ou quer começar", "hideInVideo": true},
+    {"clip": 0, "from": 7.9, "to": 8.74, "text": "a produzir,", "hl": "produzir"},
     {"clip": 0, "from": 8.74, "to": 9.94, "text": "esse recado é pra você.", "hl": "você"},
-
-    {"clip": 1, "from": 3.10, "to": 4.20, "text": "Eu sou Karuliny,"},
+    {"clip": 1, "from": 3.1, "to": 4.2, "text": "Eu sou Karuliny,"},
     {"clip": 1, "from": 4.36, "to": 5.92, "text": "fundadora da Achei Troféus", "hl": "Achei Troféus"},
     {"clip": 1, "from": 5.92, "to": 7.08, "text": "e a partir de hoje"},
     {"clip": 1, "from": 7.08, "to": 8.54, "text": "eu vou colocar parte da"},
     {"clip": 1, "from": 8.54, "to": 9.46, "text": "nossa coleção", "hl": "coleção"},
     {"clip": 1, "from": 9.46, "to": 10.86, "text": "à sua disposição.", "hideInVideo": true},
-
     {"clip": 2, "from": 3.47, "to": 4.28, "text": "É isso mesmo."},
-    {"clip": 2, "from": 4.70, "to": 6.10, "text": "Agora você pode comprar", "hl": "comprar"},
-    {"clip": 2, "from": 6.10, "to": 7.48, "text": "parte desses arquivos", "hl": "arquivos"},
+    {"clip": 2, "from": 4.7, "to": 6.1, "text": "Agora você pode comprar", "hl": "comprar"},
+    {"clip": 2, "from": 6.1, "to": 7.48, "text": "parte desses arquivos", "hl": "arquivos"},
     {"clip": 2, "from": 7.48, "to": 8.28, "text": "para colocar"},
     {"clip": 2, "from": 8.28, "to": 9.24, "text": "no seu negócio.", "hideInVideo": true},
-
-    {"clip": 3, "from": 3.90, "to": 5.22, "text": "Você recebe o arquivo,", "hl": "arquivo"},
+    {"clip": 3, "from": 3.9, "to": 5.22, "text": "Você recebe o arquivo,", "hl": "arquivo"},
     {"clip": 3, "from": 5.58, "to": 6.58, "text": "abre no Corel,", "hl": "Corel"},
-    {"clip": 3, "from": 6.86, "to": 8.50, "text": "edita tudo para o seu cliente", "hl": "cliente"},
-    {"clip": 3, "from": 8.50, "to": 10.22, "text": "sem precisar criar nada do zero,", "hl": "zero"},
+    {"clip": 3, "from": 6.86, "to": 8.5, "text": "edita tudo para o seu cliente", "hl": "cliente"},
+    {"clip": 3, "from": 8.5, "to": 10.22, "text": "sem precisar criar nada do zero,", "hl": "zero"},
     {"clip": 3, "from": 10.38, "to": 11.44, "text": "porque eu já deixei"},
     {"clip": 3, "from": 11.44, "to": 12.72, "text": "tudo pronto para você.", "hl": "pronto"},
-
-    {"clip": 4, "from": 0.95, "to": 3.10, "text": "E tem arquivo saindo", "hl": "arquivo"},
-    {"clip": 4, "from": 3.10, "to": 4.34, "text": "pelo preço de uma coca.", "hideInVideo": true},
-
-    {"clip": 5, "from": 1.90, "to": 3.84, "text": "É a oportunidade de começar", "hl": "oportunidade"},
+    {"clip": 4, "from": 0.95, "to": 3.1, "text": "E tem arquivo saindo", "hl": "arquivo"},
+    {"clip": 4, "from": 3.1, "to": 4.34, "text": "pelo preço de uma coca.", "hideInVideo": true},
+    {"clip": 5, "from": 1.55, "to": 3.84, "text": "É a oportunidade de começar", "hl": "oportunidade"},
     {"clip": 5, "from": 3.84, "to": 5.48, "text": "com modelos que fazem parte", "hl": "modelos"},
     {"clip": 5, "from": 5.48, "to": 6.26, "text": "da nossa história", "hideInVideo": true},
     {"clip": 5, "from": 6.26, "to": 7.62, "text": "e que agora podem"},
     {"clip": 5, "from": 7.62, "to": 9.04, "text": "fazer parte da sua também.", "hl": "sua"},
-
     {"clip": 6, "from": 3.17, "to": 4.88, "text": "Quer conhecer os modelos?", "hideInVideo": true},
-    {"clip": 6, "from": 4.92, "to": 5.70, "text": "Clique agora"},
-    {"clip": 6, "from": 5.70, "to": 6.38, "text": "em Saiba Mais", "hideInVideo": true},
+    {"clip": 6, "from": 4.92, "to": 5.7, "text": "Clique agora"},
+    {"clip": 6, "from": 5.7, "to": 6.38, "text": "em Saiba Mais", "hideInVideo": true},
     {"clip": 6, "from": 6.38, "to": 7.38, "text": "e escolha o seu.", "hl": "seu"}
   ]
 }

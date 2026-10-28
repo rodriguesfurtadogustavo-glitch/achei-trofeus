@@ -72,34 +72,40 @@ Tudo é determinado pelo frame (sem `Math.random` nem relógio): o mesmo frame s
 
 ## Montagem final (cortes conferidos)
 
-Os tempos do briefing vinham da transcrição automática, que **adianta o início das falas** em 0,2–0,6 s
-(ex.: no take 1 o “Ei” começa em 4,13 s, não 3,68 s; o pico em 3,33 s é um estalo, não fala). Os cortes
-foram refeitos pela energia do áudio, mantendo ~0,2–0,4 s antes da primeira sílaba e ~0,2 s depois da
-última. Quando havia dúvida (som fraco antes da frase), o corte do briefing foi mantido.
+Os cortes foram medidos pela energia do áudio (a transcrição automática adianta o início das falas).
+Cada take começa ~0,13 s antes da primeira sílaba (sem a respiração antes de falar) e termina
+~0,15 s depois da última. Pausas longas dentro de um take viram **jump cuts**, disfarçados por uma
+troca leve de zoom. As emendas caem sempre em silêncio.
 
-| # | Arquivo | Entrada → saída (frames de origem) | Timeline |
+| # | Arquivo | Trechos (frames de origem) | Timeline |
 |---|---|---|---|
-| 1 | IMG_3418 | 112 → 308 | 0,000 → 6,533 s |
-| 2 | IMG_3420 | 86 → 336 | 6,533 → 14,867 s |
-| 3 | IMG_3421 | 99 → 288 | 14,867 → 21,167 s |
-| 4 | IMG_3423 | 106 → 390 | 21,167 → 30,633 s |
-| 5 | IMG_3427 | 25 → 138 | 30,633 → 34,400 s |
-| 6 | IMG_3431 | 44 → 280 | 34,400 → 42,267 s |
-| 7 | IMG_3432 | 82 → 232 | 42,267 → 47,267 s |
-| Fecho | cartela | 60 frames | 47,267 → 49,267 s |
+| 1 | IMG_3418 | 120–160, 169–308 (pausa em “você que… já vende”) | 0,000 → 5,967 s |
+| 2 | IMG_3420 | 89–333 | 5,967 → 14,100 s |
+| 3 | IMG_3421 | 100–288 | 14,100 → 20,367 s |
+| 4 | IMG_3423 | 113–387 | 20,367 → 29,500 s |
+| 5 | IMG_3427 | 44–137 | 29,500 → 32,600 s |
+| 6 | IMG_3431 | 45–54, 66–280 (pausa em “É… a oportunidade”) | 32,600 → 40,033 s |
+| 7 | IMG_3432 | 91–144, 151–232 (pausa entre “modelos?” e “Clique”) | 40,033 → 44,500 s |
+| Fecho | cartela | 60 frames | 44,500 → 46,500 s |
 
-**Total: 1.478 frames = 49,27 s.** Voz sempre em 1×; cortes secos consecutivos, sem sobrepor falas;
-as transições são formas gráficas por cima dos cortes.
+**Total: 1.395 frames = 46,5 s.** Voz sempre em 1×; as transições gráficas ficam por cima dos cortes.
+
+### Enquadramento
+- **Fechado** (padrão): o rosto vai para o centro, ~1,3× maior, sem o espaço vazio acima da cabeça.
+- **Aberto** (quadro original) só enquanto há título/elemento na faixa de cima; a câmera abre ~0,4 s
+  antes de o elemento entrar e fecha de novo quando ele sai (`WIDE` e `FRAMING` em `config.ts`).
+- A ampliação extra torna a imagem um pouco mais macia (os anexos têm 512 × 910).
 
 ## Áudio
 
 - **Voz**: cortes exatos por amostra, passa-altas 80 Hz, redução de ruído suave (afftdn 8 dB),
   compressão 2,5:1, cada take nivelado a −19 LUFS (diferenças entre takes eram de até 1,7 LU),
   fades de 12 ms nas emendas.
-- **Música**: trilha instrumental **original, sintetizada por `prepare_audio.py`** (110 BPM, Lá menor,
-  bumbo/palmas/chimbal limpos, pad, baixo; cresce nas cenas 6–7 e resolve na cartela). Não havia
-  trilha licenciada no material — trocar `public/audio/music.wav` por uma trilha licenciada mantém o
-  ducking automático.
+- **Música**: trilha instrumental **original, sintetizada por `prepare_audio.py`** (110 BPM, Lá menor):
+  bumbo/palmas/chimbal limpos, pad e teclas com reverb e “respiração” no bumbo (sidechain), baixo,
+  arpejo na construção e um motivo melódico na chamada que resolve na cartela. Bancos de música livre
+  não estavam acessíveis neste ambiente; trocar `public/audio/music.wav` por uma trilha licenciada
+  (normalizada a −25 LUFS) mantém o ducking automático.
 - **Ducking**: a música desce ~12 dB sob a fala (fica ~16–18 dB abaixo da voz; um pouco mais presente nas cenas 6–7), calculado das legendas (`MIX` em `config.ts`).
 - **Efeitos**: laser, passagem de cartão, toque de montagem da peça, lata e acento da chamada.
 - **Master**: `scripts/master.sh` → −16 LUFS integrados, pico verdadeiro ≤ −1 dBTP.

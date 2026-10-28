@@ -37,23 +37,45 @@ export const WIDTH = edit.width;
 export const HEIGHT = edit.height;
 export const END_CARD_FRAMES = edit.endCardFrames;
 
-export type Clip = (typeof edit.clips)[number] & {start: number; dur: number};
+/** Trecho de um take na timeline: [in, out) em frames de origem. */
+export type Segment = {take: number; index: number; in: number; out: number; start: number; dur: number};
+/** Take (um arquivo gravado) com seus trechos; start/dur cobrem todos os trechos na timeline. */
+export type Clip = {file: string; face: {x: number; y: number}; segments: Segment[]; start: number; dur: number};
 
+export const SEGMENTS: Segment[] = [];
 export const CLIPS: Clip[] = (() => {
 	let start = 0;
-	return edit.clips.map((c) => {
-		const clip = {...c, start, dur: c.out - c.in};
-		start += clip.dur;
-		return clip;
+	return edit.clips.map((c, take) => {
+		const first = start;
+		const segments = c.segments.map(([a, b], index) => {
+			const seg = {take, index, in: a, out: b, start, dur: b - a};
+			start += seg.dur;
+			SEGMENTS.push(seg);
+			return seg;
+		});
+		return {file: c.file, face: c.face, segments, start: first, dur: start - first};
 	});
 })();
 
 export const END_CARD_START = CLIPS[CLIPS.length - 1].start + CLIPS[CLIPS.length - 1].dur;
 export const TOTAL_FRAMES = END_CARD_START + END_CARD_FRAMES;
 
-/** Converte um instante (segundos) do arquivo original do clipe em frame da timeline. */
-export const at = (clip: number, sourceSeconds: number) =>
-	CLIPS[clip].start + Math.round(sourceSeconds * FPS) - CLIPS[clip].in;
+/**
+ * Converte um instante (segundos) do arquivo original do take em frame da timeline.
+ * Se o instante cair numa pausa removida, vai para o começo do trecho seguinte
+ * (`bias = 'next'`) ou para o fim do anterior (`'prev'`).
+ */
+export const at = (take: number, sourceSeconds: number, bias: 'next' | 'prev' = 'next') => {
+	const sf = Math.round(sourceSeconds * FPS);
+	const segs = CLIPS[take].segments;
+	for (let i = 0; i < segs.length; i++) {
+		const s = segs[i];
+		if (sf < s.in) return i === 0 || bias === 'next' ? s.start : segs[i - 1].start + segs[i - 1].dur;
+		if (sf < s.out) return s.start + sf - s.in;
+	}
+	const last = segs[segs.length - 1];
+	return last.start + last.dur;
+};
 
 // ------------------------------------------------------------------ legendas
 export type Caption = {
@@ -66,7 +88,7 @@ export type Caption = {
 
 export const CAPTIONS: Caption[] = edit.captions.map((c) => ({
 	from: at(c.clip, c.from),
-	to: Math.min(at(c.clip, c.to) + 4, CLIPS[c.clip].start + CLIPS[c.clip].dur),
+	to: Math.min(at(c.clip, c.to, 'prev') + 4, CLIPS[c.clip].start + CLIPS[c.clip].dur),
 	text: c.text,
 	hl: (c as {hl?: string}).hl,
 	hideInVideo: (c as {hideInVideo?: boolean}).hideInVideo,
@@ -125,15 +147,35 @@ export const CUE = {
 };
 
 // Câmera virtual sobre o vídeo da apresentadora.
-// zoom: [frame local do clipe, escala] (≤ 6% no total). Ancorado no rosto.
+// Movimento lento por take: [frame local do take, escala], ancorado no rosto.
 export const CAMERA_ZOOM: [number, number][][] = [
-	[[0, 1.0], [CUE.s1.recado - CLIPS[0].start, 1.04]],
-	[[0, 1.035], [CLIPS[1].dur, 1.05]],
+	[[0, 1.0], [CLIPS[0].dur, 1.04]],
+	[[0, 1.0], [CLIPS[1].dur, 1.035]],
 	[[0, 1.02], [CLIPS[2].dur, 1.0]],
 	[[0, 1.0], [CLIPS[3].dur, 1.02]],
-	[[0, 1.03], [CUE.s5.coca - CLIPS[4].start, 1.03], [CUE.s5.coca - CLIPS[4].start + 6, 1.055], [CLIPS[4].dur, 1.05]],
+	[[0, 1.0], [CUE.s5.coca - CLIPS[4].start, 1.0], [CUE.s5.coca - CLIPS[4].start + 6, 1.025], [CLIPS[4].dur, 1.02]],
 	[[0, 1.0], [CLIPS[5].dur, 1.03]],
-	[[0, 1.0], [CLIPS[6].dur, 1.055]],
+	[[0, 1.0], [CLIPS[6].dur, 1.04]],
+];
+
+/**
+ * Enquadramento: FECHADO (rosto maior e centralizado, sem o vazio acima da cabeça) quando não há
+ * gráfico na faixa de cima; ABERTO (quadro original) enquanto títulos/elementos ocupam essa faixa.
+ * As transições levam FRAMING.ease frames e terminam antes de o elemento entrar.
+ */
+export const FRAMING = {
+	tightScale: 1.3,
+	tightFaceY: 700,
+	ease: 12,
+	/** troca de zoom nos jump cuts dentro de um take (disfarça o corte) */
+	punch: 0.93,
+};
+export const WIDE: [number, number][] = [
+	[0, CUE.s1.recado + 10], // título da cena 1
+	[CUE.s3.agora - 16, CUE.s4.mdf + 20], // títulos da cena 3 e tela dividida da cena 4
+	[CUE.s5.preço - 16, CLIPS[5].start + 8], // preço de uma coca (título, lata, selo, cartão)
+	[CUE.s6.modelos - 16, CUE.s6.out + 4], // MODELOS / DA NOSSA HISTÓRIA → PARA A SUA
+	[CUE.s7.conheça - 16, CUE.s7.saiba - 4], // CONHEÇA OS MODELOS + página do site
 ];
 
 // Deslocamento vertical global (tela dividida da demonstração principal).

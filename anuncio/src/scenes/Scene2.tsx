@@ -151,8 +151,8 @@ export const CollectionToFile: React.FC = () => {
 		r: CARD_W * heroScale * 0.085,
 	};
 	const full: Rect = {x: -20, y: -20, w: 1120, h: 1960, r: 0};
-	const file: Rect = {x: 540 - 140, y: 228, w: 280, h: 350, r: 24}; // faixa de cima: rosto livre
-	const corner: Rect = {x: 860, y: 236, w: 110, h: 138, r: 10};
+	const file: Rect = {x: 852, y: 226, w: 150, h: 190, r: 14}; // canto superior direito: livre mesmo com o quadro fechado
+	const corner: Rect = {x: 884, y: 232, w: 100, h: 126, r: 10};
 
 	const grow = prog(f, cover, 10, easeInOut);
 	const shrink = prog(f, cut + 1, 10, easeInOut);
