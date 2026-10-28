@@ -1,0 +1,32 @@
+{
+  "name": "achei-arquivos-anuncio",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Anúncio vertical Achei Arquivos — Remotion",
+  "scripts": {
+    "dev": "remotion studio",
+    "render": "remotion render AcheiArquivos out/achei-arquivos-anuncio.mp4",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/bricolage-grotesque": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@react-three/fiber": "^9.8.2",
+    "@remotion/cli": "^4.0.539",
+    "@remotion/layout-utils": "^4.0.539",
+    "@remotion/media-utils": "^4.0.539",
+    "@remotion/paths": "^4.0.539",
+    "@remotion/renderer": "^4.0.539",
+    "@remotion/shapes": "^4.0.539",
+    "@remotion/three": "^4.0.539",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.539",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/three": "^0.186.0",
+    "typescript": "^7.0.2"
+  }
+}
