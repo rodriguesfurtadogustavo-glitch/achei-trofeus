@@ -131,32 +131,47 @@
     <div class="idx-grid" id="idx"></div>
   </div>
 
+  <div class="find">
+    <label class="search">
+      <svg aria-hidden="true"><use href="#i-search"/></svg>
+      <span class="sr">Buscar no catálogo</span>
+      <input type="search" id="q" placeholder="Buscar por nome ou código (ex.: Bola de Ouro, #volei011)" autocomplete="off" enterkeyhint="search">
+    </label>
+    <label class="sel">
+      <span>Altura</span>
+      <select id="alt">
+        <option value="">Qualquer altura</option>
+        <option value="a20">Até 20 cm</option>
+        <option value="a30">21 a 30 cm</option>
+        <option value="a50">31 a 50 cm</option>
+        <option value="m50">Acima de 50 cm</option>
+      </select>
+    </label>
+    <label class="sel">
+      <span>Ordenar</span>
+      <select id="sort">
+        <option value="cat">Ordem do catálogo</option>
+        <option value="asc">Menor preço</option>
+        <option value="desc">Maior preço</option>
+        <option value="tall">Maior altura</option>
+        <option value="az">Nome A–Z</option>
+      </select>
+    </label>
+  </div>
+
   <div class="bar" id="bar">
-    <div class="bar-in">
-      <div class="tabs-wrap">
-        <button class="tabs-arr tabs-arr--l" type="button" data-dir="-1" aria-label="Categorias anteriores" tabindex="-1"><svg aria-hidden="true" style="transform:scaleX(-1)"><use href="#i-chev"/></svg></button>
-        <div class="tabs" role="tablist" aria-label="Categorias" id="tabs"></div>
-        <button class="tabs-arr tabs-arr--r" type="button" data-dir="1" aria-label="Mais categorias" tabindex="-1"><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
-      </div>
-      <div class="bar-tools">
-        <label class="search">
-          <svg aria-hidden="true"><use href="#i-search"/></svg>
-          <span class="sr">Buscar no catálogo</span>
-          <input type="search" id="q" placeholder="Buscar modelo ou código" autocomplete="off" enterkeyhint="search">
-        </label>
-        <label class="sort">
-          <span class="sr">Ordenar</span>
-          <select id="sort">
-            <option value="cat">Padrão</option>
-            <option value="asc">Menor preço</option>
-            <option value="desc">Maior preço</option>
-            <option value="tall">Maior altura</option>
-            <option value="az">Nome A–Z</option>
-          </select>
-        </label>
-      </div>
+    <div class="bar-row">
+      <span class="row-lbl"><b>1</b>Tipo</span>
+      <div class="seg" role="tablist" aria-label="Tipo de peça" id="seg"></div>
     </div>
-    <div class="subs" id="subs" hidden></div>
+    <div class="bar-row">
+      <span class="row-lbl"><b>2</b>Esporte</span>
+      <div class="chips" id="tabs" role="tablist" aria-label="Esporte"></div>
+    </div>
+    <div class="bar-row" id="subsRow" hidden>
+      <span class="row-lbl"><b>3</b>Linha</span>
+      <div class="chips" id="subs"></div>
+    </div>
   </div>
 
   <div class="acv-meta">
@@ -247,9 +262,10 @@
       <p class="qv-cat" id="qvCat"></p>
       <h2 class="d qv-name" id="qvName"></h2>
       <div class="qv-head">
-        <p class="qv-lbl">Medidas e quantidades</p>
+        <p class="qv-lbl">Escolha a medida e a quantidade</p>
         <button type="button" class="qv-kit" id="qvKit">Kit pódio · 1º 2º 3º</button>
       </div>
+      <p class="qv-hint">Toque no <b>+</b> da medida que quiser ou digite o número. Dá para combinar medidas, como campeão maior e vice menor.</p>
       <ul class="sizes" id="qvSizes"></ul>
       <label class="qv-note">
         <span>Personalização <i>(opcional)</i></span>

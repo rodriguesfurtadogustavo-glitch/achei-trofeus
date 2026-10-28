@@ -12,6 +12,7 @@
     chaveLista: 'achei:lista:v1',
     chaveEvento: 'achei:evento:v1',
     maxQtd: 10000,                 // quantidade máxima por medida
+    linkNaMensagem: false,         // true = inclui o link da lista no fim da mensagem
   };
 
   const MAXQ = CFG.maxQtd;
@@ -154,31 +155,38 @@
   }
 
   /* ------------------------------------------------------------- filtros */
+  // Passo 1: tipo (troféus ou medalhas). Passo 2: esporte. Passo 3: linha (quando existe).
+  const LOTE = 24, POR_GRUPO = 8;
   const params = new URLSearchParams(location.search);
+  const tipoDe = (c) => (c === 'medalhas' ? 'medalhas' : 'trofeus');
+  const catsTrofeu = D.categorias.filter((c) => c.id !== 'medalhas');
+  const gruposMedalha = [...new Set(prods.filter((p) => p.c === 'medalhas').map((p) => p.g))];
   const st = {
+    tipo: params.get('t') === 'medalhas' || params.get('c') === 'medalhas' ? 'medalhas' : 'trofeus',
     cat: cats.has(params.get('c')) ? params.get('c') : 'all',
     sub: params.get('g') || '',
     q: params.get('q') || '',
+    alt: params.get('a') || '',
     sort: params.get('o') || 'cat',
+    mais: LOTE,
   };
-  const tabs = $('#tabs'), subs = $('#subs'), grid = $('#grid'), qIn = $('#q'), sortIn = $('#sort');
+  if (st.tipo === 'medalhas') st.cat = 'medalhas';
+  const seg = $('#seg'), tabs = $('#tabs'), subs = $('#subs'), grid = $('#grid'), qIn = $('#q'), sortIn = $('#sort'), altIn = $('#alt');
   qIn.value = st.q;
-  if (matchMedia('(max-width: 820px)').matches) qIn.placeholder = 'Buscar no catálogo';
+  if (matchMedia('(max-width: 820px)').matches) qIn.placeholder = 'Buscar por nome ou código';
   if ([...sortIn.options].some((o) => o.value === st.sort)) sortIn.value = st.sort; else st.sort = 'cat';
+  if ([...altIn.options].some((o) => o.value === st.alt)) altIn.value = st.alt; else st.alt = '';
 
-  tabs.innerHTML = [{ id: 'all', n: 'Todos', q: prods.length }, ...D.categorias]
-    .map((c) => `<button class="tab" role="tab" type="button" data-cat="${c.id}" aria-selected="${c.id === st.cat}">${esc(c.n)}<sup>${c.q}</sup></button>`)
-    .join('');
+  const nTrofeus = prods.filter((p) => p.c !== 'medalhas').length;
+  const nMedalhas = prods.length - nTrofeus;
+  seg.innerHTML = [['trofeus', 'Troféus', nTrofeus], ['medalhas', 'Medalhas', nMedalhas]]
+    .map(([id, n, q]) => `<button class="seg-b" role="tab" type="button" data-tipo="${id}">${n}<sup>${q}</sup></button>`).join('');
 
-  // Setas da barra de categorias (desktop)
-  const tw = $('.tabs-wrap');
-  const setas = () => {
-    tw.classList.toggle('can-l', tabs.scrollLeft > 4);
-    tw.classList.toggle('can-r', tabs.scrollLeft + tabs.clientWidth < tabs.scrollWidth - 4);
-  };
-  tabs.addEventListener('scroll', setas, { passive: true });
-  addEventListener('resize', setas);
-  $$('.tabs-arr', tw).forEach((b) => b.addEventListener('click', () => tabs.scrollBy({ left: Number(b.dataset.dir) * tabs.clientWidth * 0.7 })));
+  const chipsHTML = () => (st.tipo === 'trofeus'
+    ? [{ id: 'all', n: 'Todos', q: nTrofeus }, ...catsTrofeu].map((c) => `<button class="chip-b" role="tab" type="button" data-cat="${c.id}" aria-selected="${c.id === st.cat}">${esc(c.n)}<sup>${c.q}</sup></button>`)
+    : [['', 'Todas', nMedalhas], ...gruposMedalha.map((g) => [g, g, prods.filter((p) => p.g === g && p.c === 'medalhas').length])]
+      .map(([g, n, q]) => `<button class="chip-b" role="tab" type="button" data-sub="${esc(g)}" aria-selected="${g === st.sub}">${esc(n)}<sup>${q}</sup></button>`)
+  ).join('');
 
   // Índice: uma peça forte para representar cada coleção
   const capa = { futebol: 'futebol-bola-de-ouro', beach: 'beach-goiania', volei: 'volei-austria', medalhas: 'medalhas-futebol-04', exclusivos: 'exclusivos-triunfo',
@@ -220,10 +228,15 @@
       <span class="it-b"><span class="it-n">${esc(p.n)}</span><span class="it-m">${p.faixa} · ${plural(p.s.length, 'medida', 'medidas')}</span>${preco}</span>
     </button>`;
   };
+  const ALT = { a20: [0, 20], a30: [21, 30], a50: [31, 50], m50: [51, 1e4] };
+  const naAltura = (p) => !st.alt || p.s.some((s) => { const h = altura(s.h), [a, b] = ALT[st.alt]; return h >= a && h <= b; });
 
   const filtrar = () => {
     const toks = norm(st.q).split(/\s+/).filter(Boolean);
-    let r = prods.filter((p) => (st.cat === 'all' || p.c === st.cat) && (!st.sub || p.g === st.sub) && toks.every((t) => p.q.includes(t)));
+    // a busca procura no catálogo inteiro; sem busca, respeita tipo e esporte
+    let r = prods.filter((p) => (toks.length
+      ? toks.every((t) => p.q.includes(t))
+      : tipoDe(p.c) === st.tipo && (st.cat === 'all' || p.c === st.cat) && (!st.sub || p.g === st.sub)) && naAltura(p));
     const ord = {
       asc: (a, b) => a.min - b.min,
       desc: (a, b) => b.min - a.min,
@@ -234,74 +247,115 @@
     return r;
   };
 
+  const grupoHead = (n, t, q, attrs, ver) => `<div class="grp"><span class="grp-n">${String(n).padStart(2, '0')}</span>
+    <h3 class="grp-t">${esc(t)}<i>${plural(q, 'modelo', 'modelos')}</i></h3>
+    ${ver ? `<button class="grp-go" type="button" ${attrs}>Ver ${q > POR_GRUPO ? `os ${q}` : 'só estes'} <svg aria-hidden="true"><use href="#i-chev"/></svg></button>` : ''}</div>`;
+  const maisCard = (q, t, attrs) => `<button class="it-more" type="button" ${attrs}><span><b>+${q - POR_GRUPO}</b>modelos de ${esc(t)}</span><span class="it-more-go">Ver todos <svg aria-hidden="true"><use href="#i-chev"/></svg></span></button>`;
+
   const render = () => {
     const r = filtrar();
     vista = r.map((p) => p.id);
-    const agrupar = st.cat === 'all' && !st.q && st.sort === 'cat';
-    let html = '', atual = '', n = 0;
-    r.forEach((p) => {
-      if (agrupar && p.c !== atual) {
-        atual = p.c; n++;
-        html += `<div class="grp"><span class="grp-n">${String(n).padStart(2, '0')}</span>
-          <h3 class="grp-t">${esc(p.cat.n)}<i>${p.cat.q} modelos</i></h3>
-          <button class="grp-go" type="button" data-cat="${p.c}">Ver só ${esc(p.cat.n)} <svg aria-hidden="true"><use href="#i-chev"/></svg></button></div>`;
+    // vista geral: uma prateleira por coleção (ou por linha de medalha), 8 peças em cada
+    const geral = !st.q && st.sort === 'cat' && (st.tipo === 'trofeus' ? st.cat === 'all' : !st.sub);
+    let html = '';
+    if (geral) {
+      const chave = st.tipo === 'trofeus' ? (p) => p.c : (p) => p.g;
+      const grupos = [];
+      r.forEach((p) => { const k = chave(p); let g = grupos.find((x) => x.k === k); if (!g) grupos.push(g = { k, ps: [] }); g.ps.push(p); });
+      grupos.forEach((g, n) => {
+        const t = st.tipo === 'trofeus' ? cats.get(g.k).n : `Medalhas de ${g.k}`;
+        const attrs = st.tipo === 'trofeus' ? `data-cat="${g.k}"` : `data-sub="${esc(g.k)}"`;
+        html += grupoHead(n + 1, t, g.ps.length, attrs, g.ps.length > POR_GRUPO);
+        html += g.ps.slice(0, POR_GRUPO).map(card).join('');
+        if (g.ps.length > POR_GRUPO) html += maisCard(g.ps.length, st.tipo === 'trofeus' ? cats.get(g.k).n : g.k, attrs);
+      });
+    } else {
+      html = r.slice(0, st.mais).map(card).join('');
+      if (r.length > st.mais) {
+        html += `<div class="more"><p>${num(Math.min(st.mais, r.length))} de ${num(r.length)} modelos</p>
+          <button class="btn btn--ink" type="button" data-more><span>Mostrar mais ${Math.min(LOTE, r.length - st.mais)}</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></button></div>`;
       }
-      html += card(p);
-    });
+    }
     grid.innerHTML = html;
     $('#empty').hidden = r.length > 0;
     if (io) $$('.rv-it', grid).forEach((el) => io.observe(el));
     marcarCards();
 
     // contagem
-    const onde = st.cat === 'all' ? 'todo o catálogo' : cats.get(st.cat).n + (st.sub ? ` · ${st.sub}` : '');
+    const altTxt = st.alt ? ` · ${altIn.options[altIn.selectedIndex].text.toLowerCase()}` : '';
+    const onde = st.tipo === 'medalhas'
+      ? `Medalhas${st.sub ? ` · ${st.sub}` : ''}`
+      : st.cat === 'all' ? 'Troféus · todos os esportes' : `Troféus · ${cats.get(st.cat).n}${st.sub ? ` · ${st.sub}` : ''}`;
     $('#meta').innerHTML = st.q
-      ? `<b>${r.length}</b> ${r.length === 1 ? 'resultado' : 'resultados'} para “${esc(st.q)}” em ${esc(onde)}`
-      : `<b>${r.length}</b> modelos · ${esc(onde)}`;
+      ? `<b>${r.length}</b> ${r.length === 1 ? 'resultado' : 'resultados'} para “${esc(st.q)}” no catálogo inteiro${altTxt} <button type="button" class="meta-x" data-clear>Limpar busca</button>`
+      : `<b>${r.length}</b> modelos · ${esc(onde)}${altTxt}${st.alt ? ' <button type="button" class="meta-x" data-clear>Limpar filtro</button>' : ''}`;
 
-    // abas e subgrupos
-    $$('.tab', tabs).forEach((t) => t.setAttribute('aria-selected', String(t.dataset.cat === st.cat)));
-    const grupos = st.cat === 'all' ? [] : [...new Set(prods.filter((p) => p.c === st.cat && p.g).map((p) => p.g))];
-    subs.hidden = grupos.length < 2;
-    subs.innerHTML = grupos.length < 2 ? '' : ['', ...grupos]
-      .map((g) => `<button class="sub" type="button" data-sub="${esc(g)}" aria-pressed="${g === st.sub}">${g ? esc(g) : 'Todas'}</button>`).join('');
+    // passos 1, 2 e 3
+    $$('.seg-b', seg).forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tipo === st.tipo && !st.q)));
+    tabs.innerHTML = chipsHTML();
+    if (st.q) $$('.chip-b', tabs).forEach((b) => b.setAttribute('aria-selected', 'false'));
+    const linhas = st.tipo === 'trofeus' && st.cat !== 'all' ? [...new Set(prods.filter((p) => p.c === st.cat && p.g).map((p) => p.g))] : [];
+    $('#subsRow').hidden = linhas.length < 2 || !!st.q;
+    subs.innerHTML = linhas.length < 2 ? '' : ['', ...linhas]
+      .map((g) => `<button class="chip-b" type="button" data-sub="${esc(g)}" aria-selected="${g === st.sub}">${g ? esc(g) : 'Todas'}</button>`).join('');
 
     // URL compartilhável
     const u = new URLSearchParams();
-    if (st.cat !== 'all') u.set('c', st.cat);
+    if (st.tipo === 'medalhas') u.set('t', 'medalhas');
+    if (st.cat !== 'all' && st.tipo === 'trofeus') u.set('c', st.cat);
     if (st.sub) u.set('g', st.sub);
     if (st.q) u.set('q', st.q);
+    if (st.alt) u.set('a', st.alt);
     if (st.sort !== 'cat') u.set('o', st.sort);
     const qs = u.toString();
     history.replaceState(null, '', `${location.pathname}${qs ? `?${qs}` : ''}${location.hash}`);
   };
 
-  // posição natural da barra (logo abaixo do índice), mesmo quando ela está grudada
-  const topoBarra = () => $('.idx').getBoundingClientRect().bottom + scrollY - hd.offsetHeight;
+  // posição natural da barra (logo abaixo da busca), mesmo quando ela está grudada
+  const topoBarra = () => $('.find').getBoundingClientRect().bottom + scrollY - hd.offsetHeight;
   const topoAcervo = (sempre) => {
     const y = topoBarra();
     if (sempre || scrollY > y) scrollTo({ top: y, behavior: RM ? 'auto' : 'smooth' });
   };
+  const limparBusca = () => { if (st.q) { st.q = ''; qIn.value = ''; } };
+  const setTipo = (t) => {
+    limparBusca();
+    st.tipo = t; st.cat = t === 'medalhas' ? 'medalhas' : 'all'; st.sub = ''; st.mais = LOTE;
+    render(); topoAcervo();
+  };
   const setCat = (c, rolar = true) => {
-    st.cat = c; st.sub = '';
+    limparBusca();
+    st.tipo = tipoDe(c); st.cat = c === 'medalhas' ? 'medalhas' : c; st.sub = ''; st.mais = LOTE;
     render();
-    const t = $(`.tab[data-cat="${c}"]`, tabs);
+    const t = $(`.chip-b[aria-selected="true"]`, tabs);
     if (t) tabs.scrollTo({ left: t.offsetLeft - 40, behavior: RM ? 'auto' : 'smooth' });
     if (rolar) topoAcervo();
   };
+  const setSub = (g, rolar = true) => { limparBusca(); st.sub = g; st.mais = LOTE; render(); if (rolar) topoAcervo(); };
 
-  tabs.addEventListener('click', (e) => { const t = e.target.closest('.tab'); if (t) setCat(t.dataset.cat); });
-  subs.addEventListener('click', (e) => { const b = e.target.closest('.sub'); if (b) { st.sub = b.dataset.sub; render(); } });
+  seg.addEventListener('click', (e) => { const b = e.target.closest('.seg-b'); if (b) setTipo(b.dataset.tipo); });
+  tabs.addEventListener('click', (e) => {
+    const b = e.target.closest('.chip-b');
+    if (!b) return;
+    if (b.dataset.cat) setCat(b.dataset.cat); else { if (st.q) { limparBusca(); st.tipo = 'medalhas'; st.cat = 'medalhas'; } setSub(b.dataset.sub); }
+  });
+  subs.addEventListener('click', (e) => { const b = e.target.closest('.chip-b'); if (b) setSub(b.dataset.sub, false); });
+  $('#meta').addEventListener('click', (e) => {
+    if (!e.target.closest('[data-clear]')) return;
+    limparBusca(); st.alt = ''; altIn.value = ''; st.mais = LOTE; render();
+  });
   grid.addEventListener('click', (e) => {
-    const g = e.target.closest('.grp-go');
-    if (g) { setCat(g.dataset.cat); return; }
+    const g = e.target.closest('.grp-go, .it-more');
+    if (g) { if (g.dataset.cat) setCat(g.dataset.cat); else setSub(g.dataset.sub); return; }
+    if (e.target.closest('[data-more]')) { st.mais += LOTE; render(); return; }
     const it = e.target.closest('.it');
     if (it) abrirFicha(it.dataset.id);
   });
   let tq;
-  qIn.addEventListener('input', () => { clearTimeout(tq); tq = setTimeout(() => { st.q = qIn.value.trim(); render(); }, 140); });
-  qIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { qIn.blur(); topoAcervo(); } });
-  sortIn.addEventListener('change', () => { st.sort = sortIn.value; render(); });
+  qIn.addEventListener('input', () => { clearTimeout(tq); tq = setTimeout(() => { st.q = qIn.value.trim(); st.mais = LOTE; render(); }, 140); });
+  qIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { qIn.blur(); topoAcervo(true); } });
+  sortIn.addEventListener('change', () => { st.sort = sortIn.value; st.mais = LOTE; render(); });
+  altIn.addEventListener('change', () => { st.alt = altIn.value; st.mais = LOTE; render(); });
 
   const marcarCards = () => {
     const q = new Map();
@@ -634,45 +688,64 @@
   const dataBR = (iso) => { const [y, m, d] = (iso || '').split('-'); return d ? `${d}/${m}/${y}` : ''; };
   const mensagem = () => {
     const t = totais();
+    const SEP = '━━━━━━━━━━━━━━━━';
     const L = [];
-    L.push('Olá, Achei Troféus! Montei esta lista no catálogo do site e gostaria de um orçamento.');
-    L.push('');
-    L.push(`*MINHA LISTA* · ${plural(t.modelos, 'modelo', 'modelos')} · ${plural(t.pecas, 'peça', 'peças')}`);
+    const linha = (x = '') => L.push(x);
+    linha('Olá, Achei Troféus! Montei este pedido no catálogo do site e gostaria de um orçamento.');
+    linha();
+    linha(SEP);
+    linha(`*PEDIDO* · ${plural(t.modelos, 'modelo', 'modelos')} · ${plural(t.pecas, 'peça', 'peças')}`);
+    linha(SEP);
+    // troféus primeiro, depois medalhas, na ordem em que entraram na lista
     const ordem = [...new Set(lista.map((l) => l.id))];
-    ordem.forEach((id, i) => {
-      const p = byId.get(id);
-      L.push('');
-      L.push(`*${i + 1}. ${p.tipo} ${p.n}* — ${p.cat.n}${p.k ? ` · ${p.k}` : ''}`);
-      linhasDe(id).forEach((l) => L.push(`   • ${l.h} × ${num(l.q)}`));
-      if (notas[id]) L.push(`   _Personalização:_ ${notas[id]}`);
+    const blocos = [['Troféus', ordem.filter((id) => byId.get(id).c !== 'medalhas')], ['Medalhas', ordem.filter((id) => byId.get(id).c === 'medalhas')]]
+      .filter(([, ids]) => ids.length);
+    let n = 0;
+    blocos.forEach(([titulo, ids]) => {
+      if (blocos.length > 1) { linha(); linha(`▸ *${titulo.toUpperCase()}*`); }
+      ids.forEach((id) => {
+        const p = byId.get(id), ls = linhasDe(id);
+        n++;
+        linha();
+        linha(`*${n}. ${p.tipo} ${p.n}*`);
+        linha(`${p.cat.n}${p.g && p.c !== 'medalhas' ? ` · ${p.g}` : ''}${p.k ? ` · Cód. ${p.k}` : ''}`);
+        ls.forEach((l) => {
+          const v = CFG.mostrarPrecos ? ` — ${money(sizeOf(p, l.h).p * l.q)}` : '';
+          linha(`• ${l.h.replace(/^(\d+)cm/, '$1 cm')}: ${num(l.q)} ${l.q === 1 ? 'unidade' : 'unidades'}${v}`);
+        });
+        if (notas[id]) linha(`✎ Personalização: ${notas[id]}`);
+      });
     });
     if (CFG.mostrarPrecos) {
-      L.push('');
-      L.push(`Referência pela tabela do catálogo: ${money(t.valor)} (sujeito à confirmação)`);
+      linha();
+      linha(SEP);
+      linha(`*Valor de referência:* ${money(t.valor)}`);
+      linha('_Pela tabela do catálogo. Personalização, prazo e frete a confirmar._');
     }
-    const ev = [
-      ['Nome', evento.nome], ['Evento', evento.evento], ['Data do evento', dataBR(evento.data)],
-    ].filter(([, v]) => v && String(v).trim());
+    const lugar = [evento.cidade, evento.uf].map((v) => (v || '').trim()).filter(Boolean).join(' – ');
+    const pais = (evento.pais || '').trim();
+    if (lugar || pais) {
+      linha();
+      linha('*ENTREGA*');
+      linha([lugar, pais].filter(Boolean).join(', '));
+    }
+    const ev = [['Nome', evento.nome], ['Evento', evento.evento], ['Data', dataBR(evento.data)]].filter(([, v]) => v && String(v).trim());
     if (ev.length) {
-      L.push('');
-      L.push('*EVENTO*');
-      ev.forEach(([k, v]) => L.push(`${k}: ${String(v).trim()}`));
-    }
-    const ent = [['Cidade', evento.cidade], ['Estado', evento.uf], ['País', evento.pais]].filter(([, v]) => v && v.trim());
-    if (ent.length) {
-      L.push('');
-      L.push('*ENTREGA*');
-      ent.forEach(([k, v]) => L.push(`${k}: ${v.trim()}`));
+      linha();
+      linha('*EVENTO*');
+      ev.forEach(([k, v]) => linha(`${k}: ${String(v).trim()}`));
     }
     if (evento.msg && evento.msg.trim()) {
-      L.push('');
-      L.push('*MENSAGEM*');
-      L.push(evento.msg.trim());
+      linha();
+      linha('*MENSAGEM*');
+      linha(evento.msg.trim());
     }
-    if (/^https?:/.test(location.protocol)) {
-      L.push('');
-      L.push(`Lista no site: ${linkLista()}`);
+    if (CFG.linkNaMensagem && /^https?:/.test(location.protocol)) {
+      linha();
+      linha(`Lista no site: ${linkLista()}`);
     }
+    linha();
+    linha('Aguardo o orçamento. Obrigado!');
     return L.join('\n');
   };
   const send = $('#send');
@@ -714,7 +787,6 @@
   /* ------------------------------------------------------------- início */
   render();
   sync();
-  setas();
   const rota = () => {
     if (importar()) return;
     const m = /^#p=([\w-]+)/.exec(location.hash);
