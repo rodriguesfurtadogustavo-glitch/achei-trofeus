@@ -64,6 +64,10 @@
   const img = (p) => (window.ACHEI_IMG && window.ACHEI_IMG[p.id]) || `img/catalogo/${p.id}.webp`;
   const sizeOf = (p, h) => p.s.find((s) => s.h === h);
   const splitH = (h) => { const [a, ...b] = h.split(' · '); return [a, b.join(' · ')]; };
+  // Acabamento: os modelos são produzidos em ouro, prata ou bronze — é uma escolha do pedido
+  const CORES = [['ouro', 'Ouro'], ['prata', 'Prata'], ['bronze', 'Bronze'], ['', 'Sem preferência']];
+  const corNome = (c) => (CORES.find((x) => x[0] === c) || CORES[3])[1];
+  const mesma = (a, b) => a.id === b.id && a.h === b.h && (a.c || '') === (b.c || '');
 
   /* ------------------------------------------------------------- lista */
   // linhas: uma por modelo + medida · notas: personalização por modelo
@@ -71,7 +75,7 @@
   const bruto = Array.isArray(salvo) ? { linhas: salvo, notas: {} } : salvo || { linhas: [], notas: {} };
   let lista = (bruto.linhas || [])
     .filter((l) => l && byId.has(l.id) && sizeOf(byId.get(l.id), l.h) && l.q > 0)
-    .map((l) => ({ id: l.id, h: l.h, q: Math.min(MAXQ, l.q | 0) }));
+    .map((l) => ({ id: l.id, h: l.h, c: CORES.some((x) => x[0] === l.c) ? l.c : '', q: Math.min(MAXQ, l.q | 0) }));
   let notas = {};
   Object.entries(bruto.notas || {}).forEach(([id, n]) => { if (byId.has(id) && n) notas[id] = String(n).slice(0, 240); });
   (bruto.linhas || []).forEach((l) => { if (l && l.note && byId.has(l.id) && !notas[l.id]) notas[l.id] = String(l.note).slice(0, 240); });
@@ -81,6 +85,11 @@
   };
   const salvar = () => { persistir(); sync(); };
   const linhasDe = (id) => lista.filter((l) => l.id === id);
+  // ouro, prata, bronze, sem preferência; dentro de cada cor, da menor para a maior medida
+  const ordenadas = (id) => {
+    const p = byId.get(id), ic = (c) => CORES.findIndex((x) => x[0] === c), is = (h) => p.s.findIndex((x) => x.h === h);
+    return linhasDe(id).sort((a, b) => ic(a.c) - ic(b.c) || is(a.h) - is(b.h));
+  };
   const totais = () => {
     const modelos = new Set(lista.map((l) => l.id)).size;
     const pecas = lista.reduce((a, l) => a + l.q, 0);
@@ -167,26 +176,33 @@
     sub: params.get('g') || '',
     q: params.get('q') || '',
     alt: params.get('a') || '',
+    preco: params.get('v') || '',
     sort: params.get('o') || 'cat',
     mais: LOTE,
   };
   if (st.tipo === 'medalhas') st.cat = 'medalhas';
-  const seg = $('#seg'), tabs = $('#tabs'), subs = $('#subs'), grid = $('#grid'), qIn = $('#q'), sortIn = $('#sort'), altIn = $('#alt');
+  const seg = $('#seg'), tabs = $('#tabs'), subs = $('#subs'), grid = $('#grid'), qIn = $('#q'), sortIn = $('#sort');
+  const ALTS = [['', 'Qualquer'], ['a20', 'Até 20 cm'], ['a30', '21 a 30 cm'], ['a50', '31 a 50 cm'], ['m50', 'Acima de 50 cm']];
+  const PRECOS = [['', 'Qualquer', 0, 1e9], ['p1', 'Até R$ 29,99', 0, 29.99], ['p2', 'R$ 30 a 49,99', 30, 49.99], ['p3', 'R$ 50 a 99,99', 50, 99.99],
+    ['p4', 'R$ 100 a 399,99', 100, 399.99], ['p5', 'Acima de R$ 400', 400, 1e9]];
   qIn.value = st.q;
   if (matchMedia('(max-width: 820px)').matches) qIn.placeholder = 'Buscar por nome ou código';
   if ([...sortIn.options].some((o) => o.value === st.sort)) sortIn.value = st.sort; else st.sort = 'cat';
-  if ([...altIn.options].some((o) => o.value === st.alt)) altIn.value = st.alt; else st.alt = '';
+  if (!ALTS.some((a) => a[0] === st.alt)) st.alt = '';
+  if (!PRECOS.some((a) => a[0] === st.preco)) st.preco = '';
 
   const nTrofeus = prods.filter((p) => p.c !== 'medalhas').length;
   const nMedalhas = prods.length - nTrofeus;
   seg.innerHTML = [['trofeus', 'Troféus', nTrofeus], ['medalhas', 'Medalhas', nMedalhas]]
     .map(([id, n, q]) => `<button class="seg-b" role="tab" type="button" data-tipo="${id}">${n}<sup>${q}</sup></button>`).join('');
 
+  const mini = (p) => (p ? `<img src="${img(p)}" alt="" width="40" height="50" loading="lazy">` : '<span class="chip-all" aria-hidden="true"></span>');
   const chipsHTML = () => (st.tipo === 'trofeus'
-    ? [{ id: 'all', n: 'Todos', q: nTrofeus }, ...catsTrofeu].map((c) => `<button class="chip-b" role="tab" type="button" data-cat="${c.id}" aria-selected="${c.id === st.cat}">${esc(c.n)}<sup>${c.q}</sup></button>`)
+    ? [{ id: 'all', n: 'Todos', q: nTrofeus }, ...catsTrofeu].map((c) => `<button class="chip-b chip-b--img" role="tab" type="button" data-cat="${c.id}" aria-selected="${c.id === st.cat}">${mini(c.id === 'all' ? null : byId.get(capa[c.id]))}<span>${esc(c.n)}<sup>${c.q}</sup></span></button>`)
     : [['', 'Todas', nMedalhas], ...gruposMedalha.map((g) => [g, g, prods.filter((p) => p.g === g && p.c === 'medalhas').length])]
-      .map(([g, n, q]) => `<button class="chip-b" role="tab" type="button" data-sub="${esc(g)}" aria-selected="${g === st.sub}">${esc(n)}<sup>${q}</sup></button>`)
+      .map(([g, n, q]) => `<button class="chip-b chip-b--img" role="tab" type="button" data-sub="${esc(g)}" aria-selected="${g === st.sub}">${mini(g ? prods.find((p) => p.c === 'medalhas' && p.g === g) : null)}<span>${esc(n)}<sup>${q}</sup></span></button>`)
   ).join('');
+  const chipsSimples = (lista0, atual, attr) => lista0.map(([v, n]) => `<button class="chip-b" type="button" ${attr}="${v}" aria-pressed="${v === atual}">${esc(n)}</button>`).join('');
 
   // Índice: uma peça forte para representar cada coleção
   const capa = { futebol: 'futebol-bola-de-ouro', beach: 'beach-goiania', volei: 'volei-austria', medalhas: 'medalhas-futebol-04', exclusivos: 'exclusivos-triunfo',
@@ -230,13 +246,15 @@
   };
   const ALT = { a20: [0, 20], a30: [21, 30], a50: [31, 50], m50: [51, 1e4] };
   const naAltura = (p) => !st.alt || p.s.some((s) => { const h = altura(s.h), [a, b] = ALT[st.alt]; return h >= a && h <= b; });
+  // valor: o modelo entra se alguma das medidas custa dentro da faixa
+  const noPreco = (p) => { if (!st.preco) return true; const [, , a, b] = PRECOS.find((x) => x[0] === st.preco); return p.s.some((s) => s.p >= a && s.p <= b); };
 
   const filtrar = () => {
     const toks = norm(st.q).split(/\s+/).filter(Boolean);
     // a busca procura no catálogo inteiro; sem busca, respeita tipo e esporte
     let r = prods.filter((p) => (toks.length
       ? toks.every((t) => p.q.includes(t))
-      : tipoDe(p.c) === st.tipo && (st.cat === 'all' || p.c === st.cat) && (!st.sub || p.g === st.sub)) && naAltura(p));
+      : tipoDe(p.c) === st.tipo && (st.cat === 'all' || p.c === st.cat) && (!st.sub || p.g === st.sub)) && naAltura(p) && noPreco(p));
     const ord = {
       asc: (a, b) => a.min - b.min,
       desc: (a, b) => b.min - a.min,
@@ -256,7 +274,7 @@
     const r = filtrar();
     vista = r.map((p) => p.id);
     // vista geral: uma prateleira por coleção (ou por linha de medalha), 8 peças em cada
-    const geral = !st.q && st.sort === 'cat' && (st.tipo === 'trofeus' ? st.cat === 'all' : !st.sub);
+    const geral = !st.q && !st.alt && !st.preco && st.sort === 'cat' && (st.tipo === 'trofeus' ? st.cat === 'all' : !st.sub);
     let html = '';
     if (geral) {
       const chave = st.tipo === 'trofeus' ? (p) => p.c : (p) => p.g;
@@ -281,14 +299,30 @@
     if (io) $$('.rv-it', grid).forEach((el) => io.observe(el));
     marcarCards();
 
-    // contagem
-    const altTxt = st.alt ? ` · ${altIn.options[altIn.selectedIndex].text.toLowerCase()}` : '';
+    // contagem e resumo dos filtros (barra fixa)
     const onde = st.tipo === 'medalhas'
       ? `Medalhas${st.sub ? ` · ${st.sub}` : ''}`
       : st.cat === 'all' ? 'Troféus · todos os esportes' : `Troféus · ${cats.get(st.cat).n}${st.sub ? ` · ${st.sub}` : ''}`;
+    const nomeAlt = (ALTS.find((a) => a[0] === st.alt) || [])[1], nomePreco = (PRECOS.find((a) => a[0] === st.preco) || [])[1];
+    const extras = [st.alt && nomeAlt.toLowerCase(), st.preco && nomePreco].filter(Boolean).join(' · ');
     $('#meta').innerHTML = st.q
-      ? `<b>${r.length}</b> ${r.length === 1 ? 'resultado' : 'resultados'} para “${esc(st.q)}” no catálogo inteiro${altTxt} <button type="button" class="meta-x" data-clear>Limpar busca</button>`
-      : `<b>${r.length}</b> modelos · ${esc(onde)}${altTxt}${st.alt ? ' <button type="button" class="meta-x" data-clear>Limpar filtro</button>' : ''}`;
+      ? `<b>${r.length}</b> ${r.length === 1 ? 'resultado' : 'resultados'} para “${esc(st.q)}” no catálogo inteiro${extras ? ` · ${esc(extras)}` : ''}`
+      : `<b>${r.length}</b> modelos · ${esc(onde)}${extras ? ` · ${esc(extras)}` : ''}`;
+    const tags = [];
+    if (st.q) tags.push(['q', `“${st.q}”`]);
+    else {
+      tags.push(['', st.tipo === 'medalhas' ? 'Medalhas' : 'Troféus', true]);
+      if (st.tipo === 'trofeus' && st.cat !== 'all') tags.push(['cat', cats.get(st.cat).n]);
+      if (st.sub) tags.push(['sub', st.sub]);
+    }
+    if (st.alt) tags.push(['alt', nomeAlt]);
+    if (st.preco) tags.push(['preco', nomePreco]);
+    $('#tags').innerHTML = tags.map(([k, n, fixo]) => (fixo ? `<span class="tag tag--fixo">${esc(n)}</span>`
+      : `<button type="button" class="tag" data-tag="${k}" aria-label="Remover filtro ${esc(n)}">${esc(n)}<svg aria-hidden="true"><use href="#i-x"/></svg></button>`)).join('')
+      + (tags.length > 1 ? '<button type="button" class="tag-clear" data-tag="all">Limpar</button>' : '');
+    $('#barN').textContent = plural(r.length, 'modelo', 'modelos');
+    $('#alts').innerHTML = chipsSimples(ALTS, st.alt, 'data-alt');
+    $('#precos').innerHTML = chipsSimples(PRECOS, st.preco, 'data-preco');
 
     // passos 1, 2 e 3
     $$('.seg-b', seg).forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tipo === st.tipo && !st.q)));
@@ -306,13 +340,14 @@
     if (st.sub) u.set('g', st.sub);
     if (st.q) u.set('q', st.q);
     if (st.alt) u.set('a', st.alt);
+    if (st.preco) u.set('v', st.preco);
     if (st.sort !== 'cat') u.set('o', st.sort);
     const qs = u.toString();
     history.replaceState(null, '', `${location.pathname}${qs ? `?${qs}` : ''}${location.hash}`);
   };
 
-  // posição natural da barra (logo abaixo da busca), mesmo quando ela está grudada
-  const topoBarra = () => $('.find').getBoundingClientRect().bottom + scrollY - hd.offsetHeight;
+  // posição natural da barra (logo abaixo do painel de filtros), mesmo quando ela está grudada
+  const topoBarra = () => $('#flt').getBoundingClientRect().bottom + scrollY - hd.offsetHeight;
   const topoAcervo = (sempre) => {
     const y = topoBarra();
     if (sempre || scrollY > y) scrollTo({ top: y, behavior: RM ? 'auto' : 'smooth' });
@@ -340,9 +375,22 @@
     if (b.dataset.cat) setCat(b.dataset.cat); else { if (st.q) { limparBusca(); st.tipo = 'medalhas'; st.cat = 'medalhas'; } setSub(b.dataset.sub); }
   });
   subs.addEventListener('click', (e) => { const b = e.target.closest('.chip-b'); if (b) setSub(b.dataset.sub, false); });
-  $('#meta').addEventListener('click', (e) => {
-    if (!e.target.closest('[data-clear]')) return;
-    limparBusca(); st.alt = ''; altIn.value = ''; st.mais = LOTE; render();
+  $('#alts').addEventListener('click', (e) => { const b = e.target.closest('[data-alt]'); if (b) { st.alt = b.dataset.alt; st.mais = LOTE; render(); } });
+  $('#precos').addEventListener('click', (e) => { const b = e.target.closest('[data-preco]'); if (b) { st.preco = b.dataset.preco; st.mais = LOTE; render(); } });
+  $('#tags').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tag]');
+    if (!b) return;
+    const k = b.dataset.tag;
+    if (k === 'q' || k === 'all') limparBusca();
+    if (k === 'cat' || k === 'all') { st.cat = st.tipo === 'medalhas' ? 'medalhas' : 'all'; st.sub = ''; }
+    if (k === 'sub') st.sub = '';
+    if (k === 'alt' || k === 'all') st.alt = '';
+    if (k === 'preco' || k === 'all') st.preco = '';
+    st.mais = LOTE; render();
+  });
+  $('#toFlt').addEventListener('click', () => {
+    const y = $('#flt').getBoundingClientRect().top + scrollY - hd.offsetHeight - 10;
+    scrollTo({ top: y, behavior: RM ? 'auto' : 'smooth' });
   });
   grid.addEventListener('click', (e) => {
     const g = e.target.closest('.grp-go, .it-more');
@@ -355,7 +403,6 @@
   qIn.addEventListener('input', () => { clearTimeout(tq); tq = setTimeout(() => { st.q = qIn.value.trim(); st.mais = LOTE; render(); }, 140); });
   qIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { qIn.blur(); topoAcervo(true); } });
   sortIn.addEventListener('change', () => { st.sort = sortIn.value; st.mais = LOTE; render(); });
-  altIn.addEventListener('change', () => { st.alt = altIn.value; st.mais = LOTE; render(); });
 
   const marcarCards = () => {
     const q = new Map();
@@ -393,7 +440,8 @@
   });
 
   /* ------------------------------------------------------------- ficha */
-  let fp = null, fq = {};
+  let fp = null, fq = {}, fc = '';   // fq: quantidades por "cor|medida"; fc: cor em edição
+  const fk = (c, h) => `${c}|${h}`;
   const qvSizes = $('#qvSizes');
 
   const stepper = (val, min, label) => `<span class="step">
@@ -407,9 +455,9 @@
     fp = p;
     const atuais = linhasDe(id);
     fq = {};
-    p.s.forEach((s) => { fq[s.h] = 0; });
-    atuais.forEach((l) => { fq[l.h] = l.q; });
-    if (!atuais.length) fq[p.s[0].h] = 1;
+    atuais.forEach((l) => { fq[fk(l.c, l.h)] = l.q; });
+    fc = atuais.length ? atuais[0].c : '';
+    if (!atuais.length) fq[fk(fc, p.s[0].h)] = 1;
 
     const im = $('#qvImg');
     im.classList.add('is-loading');
@@ -425,7 +473,7 @@
     qvSizes.innerHTML = p.s.map((s) => {
       const [h, extra] = splitH(s.h);
       return `<li data-h="${esc(s.h)}"><span class="sz-h">${esc(h)}${extra ? `<small>${esc(extra)}</small>` : ''}</span>
-        <span class="sz-p">${money(s.p)}</span>${stepper(fq[s.h], 0, s.h)}</li>`;
+        <span class="sz-p">${money(s.p)}</span>${stepper(fq[fk(fc, s.h)] || 0, 0, s.h)}</li>`;
     }).join('');
 
     const lst = vista.includes(id) ? vista : prods.map((x) => x.id);
@@ -445,11 +493,17 @@
     if (!fp) return;
     let pecas = 0, valor = 0;
     $$('li', qvSizes).forEach((li) => {
-      const h = li.dataset.h, q = fq[h] || 0;
+      const h = li.dataset.h, q = fq[fk(fc, h)] || 0;
       li.classList.toggle('is-on', q > 0);
       $('input', li).value = q;
       $('[data-d="-1"]', li).disabled = q <= 0;
-      pecas += q; valor += q * sizeOf(fp, h).p;
+    });
+    Object.entries(fq).forEach(([k, q]) => { if (q > 0) { pecas += q; valor += q * sizeOf(fp, k.split('|')[1]).p; } });
+    // cores: a escolhida em destaque, as outras mostram quantas peças já têm
+    $$('.cor-b', $('#qvCores')).forEach((b) => {
+      const c = b.dataset.cor, n = fp.s.reduce((a, s) => a + (fq[fk(c, s.h)] || 0), 0);
+      b.setAttribute('aria-pressed', String(c === fc));
+      $('i', b).textContent = n ? num(n) : '';
     });
     const tinha = linhasDe(fp.id).length > 0;
     $('#qvSum').innerHTML = pecas
@@ -463,31 +517,35 @@
   qvSizes.addEventListener('click', (e) => {
     const b = e.target.closest('[data-d]');
     if (!b) return;
-    const h = b.closest('li').dataset.h;
-    fq[h] = Math.max(0, Math.min(MAXQ, (fq[h] || 0) + Number(b.dataset.d)));
+    const k = fk(fc, b.closest('li').dataset.h);
+    fq[k] = Math.max(0, Math.min(MAXQ, (fq[k] || 0) + Number(b.dataset.d)));
     atualizarFicha();
   });
   qvSizes.addEventListener('input', (e) => {
     if (e.target.tagName !== 'INPUT') return;
-    const h = e.target.closest('li').dataset.h;
-    fq[h] = Math.max(0, Math.min(MAXQ, parseInt(e.target.value, 10) || 0));
+    fq[fk(fc, e.target.closest('li').dataset.h)] = Math.max(0, Math.min(MAXQ, parseInt(e.target.value, 10) || 0));
     atualizarFicha();
   });
   qvSizes.addEventListener('focusin', (e) => { if (e.target.tagName === 'INPUT') e.target.select(); });
+  $('#qvCores').innerHTML = CORES.map(([c, n]) => `<button type="button" class="cor-b" data-cor="${c}" aria-pressed="false"><span class="cor-dot cor-dot--${c || 'livre'}"></span>${n}<i></i></button>`).join('');
+  $('#qvCores').addEventListener('click', (e) => { const b = e.target.closest('.cor-b'); if (b) { fc = b.dataset.cor; atualizarFicha(); } });
 
   $('#qvKit').addEventListener('click', () => {
     // 3º lugar na menor medida, 1º na terceira — o degrau do pódio
     const ord = fp.s.slice().sort((a, b) => altura(a.h) - altura(b.h) || a.p - b.p).slice(0, 3).map((s) => s.h);
-    fp.s.forEach((s) => { fq[s.h] = ord.includes(s.h) ? 1 : 0; });
+    fq = {};
+    fq[fk('ouro', ord[2])] = 1; fq[fk('prata', ord[1])] = 1; fq[fk('bronze', ord[0])] = 1;
+    fc = 'ouro';
     atualizarFicha();
-    toast(`Kit pódio · 1º ${esc(ord[2])}, 2º ${esc(ord[1])}, 3º ${esc(ord[0])}`);
+    toast(`Kit pódio · 1º ouro ${esc(ord[2])}, 2º prata ${esc(ord[1])}, 3º bronze ${esc(ord[0])}`);
   });
 
   $('#qvAdd').addEventListener('click', () => {
     const p = fp, note = $('#qvNote').value.trim();
     const tinha = linhasDe(p.id).length > 0;
     const antes = lista.findIndex((l) => l.id === p.id);
-    const novas = p.s.filter((s) => fq[s.h] > 0).map((s) => ({ id: p.id, h: s.h, q: fq[s.h] }));
+    const novas = [];
+    CORES.forEach(([c]) => p.s.forEach((s) => { const q = fq[fk(c, s.h)] || 0; if (q > 0) novas.push({ id: p.id, h: s.h, c, q }); }));
     if (novas.length && note) notas[p.id] = note; else delete notas[p.id];
     lista = lista.filter((l) => l.id !== p.id);
     lista.splice(antes < 0 ? lista.length : antes, 0, ...novas);
@@ -518,11 +576,13 @@
 
 
   const grupoHTML = (id) => {
-    const p = byId.get(id), ls = linhasDe(id);
+    const p = byId.get(id), ls = ordenadas(id);
     const rows = ls.map((l) => {
       const opts = p.s.map((x) => `<option value="${esc(x.h)}" ${x.h === l.h ? 'selected' : ''}>${esc(x.h)}</option>`).join('');
-      return `<div class="ln-row" data-h="${esc(l.h)}">
-          <select class="ln-size" aria-label="Medida de ${esc(p.n)}" ${p.s.length < 2 ? 'disabled' : ''}>${opts}</select>
+      const cores = CORES.map(([c, n]) => `<option value="${c}" ${c === l.c ? 'selected' : ''}>${n}</option>`).join('');
+      return `<div class="ln-row" data-h="${esc(l.h)}" data-c="${l.c}">
+          <span class="ln-sels"><select class="ln-size" aria-label="Medida de ${esc(p.n)}" ${p.s.length < 2 ? 'disabled' : ''}>${opts}</select>
+          <select class="ln-cor" aria-label="Cor de ${esc(p.n)}">${cores}</select></span>
           ${stepper(l.q, 1, `de ${p.n} ${l.h}`)}
           ${CFG.mostrarPrecos ? `<span class="ln-v"></span>` : ''}
           <button class="ln-rm" type="button" data-rm aria-label="Remover ${esc(p.n)} ${esc(l.h)}"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
@@ -534,7 +594,7 @@
         <div class="ln-top"><div><p class="ln-n">${esc(p.n)}</p><span class="ln-k">${esc(p.cat.n)}${p.k ? ` · ${esc(p.k)}` : ''}</span></div>
           <button class="ln-all" type="button" data-rmall>Remover</button></div>
         <div class="ln-rows">${rows}</div>
-        ${ls.length < p.s.length ? `<button class="ln-more" type="button" data-ficha="${p.id}"><svg aria-hidden="true"><use href="#i-plus"/></svg>Outra medida</button>` : ''}
+        <button class="ln-more" type="button" data-ficha="${p.id}"><svg aria-hidden="true"><use href="#i-plus"/></svg>Outra medida ou cor</button>
         <label class="ln-note"><span class="sr">Personalização de ${esc(p.n)}</span><input type="text" maxlength="240" value="${esc(notas[p.id] || '')}" placeholder="Personalização: texto da placa, categoria, cores…"></label>
       </div></li>`;
   };
@@ -547,7 +607,7 @@
   };
   const linhaDe = (el) => {
     const id = el.closest('.ln-it').dataset.id, row = el.closest('.ln-row');
-    return row ? lista.find((l) => l.id === id && l.h === row.dataset.h) : null;
+    return row ? lista.find((l) => l.id === id && l.h === row.dataset.h && l.c === row.dataset.c) : null;
   };
   const resumoLista = () => {
     const t = totais();
@@ -585,7 +645,7 @@
     if (rm) {
       const l = linhaDe(rm), p = byId.get(l.id), ultimo = linhasDe(l.id).length === 1;
       sair(ultimo ? rm.closest('.ln-it') : rm.closest('.ln-row'), () => {
-        lista.splice(lista.indexOf(l), 1); salvar(); desenharLista(); toast(`<b>${esc(p.n)} ${esc(l.h)}</b> removido`);
+        lista.splice(lista.indexOf(l), 1); salvar(); desenharLista(); toast(`<b>${esc(p.n)} ${esc(l.h)}${l.c ? ` ${corNome(l.c).toLowerCase()}` : ''}</b> removido`);
       });
       return;
     }
@@ -612,10 +672,12 @@
   ul.addEventListener('change', (e) => {
     const el = e.target;
     if (el.matches('.step input')) { el.value = linhaDe(el).q; return; }
-    if (!el.matches('.ln-size')) return;
-    const l = linhaDe(el), dup = lista.find((x) => x !== l && x.id === l.id && x.h === el.value);
-    if (dup) { dup.q = Math.min(MAXQ, dup.q + l.q); lista.splice(lista.indexOf(l), 1); toast('Essa medida já estava na lista: <b>quantidades somadas</b>'); }
-    else l.h = el.value;
+    if (!el.matches('.ln-size, .ln-cor')) return;
+    const l = linhaDe(el), novo = { id: l.id, h: l.h, c: l.c };
+    if (el.matches('.ln-size')) novo.h = el.value; else novo.c = el.value;
+    const dup = lista.find((x) => x !== l && mesma(x, novo));
+    if (dup) { dup.q = Math.min(MAXQ, dup.q + l.q); lista.splice(lista.indexOf(l), 1); toast('Essa combinação já estava na lista: <b>quantidades somadas</b>'); }
+    else Object.assign(l, novo);
     salvar(); desenharLista();
   });
   ul.addEventListener('focusin', (e) => { if (e.target.matches('.step input')) e.target.select(); });
@@ -639,7 +701,7 @@
   const cod = (t) => encodeURIComponent(t).replace(/[.~!]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
   const linkLista = () => {
     const base = location.href.split('#')[0].split('?')[0];
-    const itens = lista.map((l) => [l.id, byId.get(l.id).s.findIndex((x) => x.h === l.h), l.q].join('~')).join('.');
+    const itens = lista.map((l) => [l.id, byId.get(l.id).s.findIndex((x) => x.h === l.h), l.q, l.c].join('~')).join('.');
     const ns = Object.entries(notas).map(([id, n]) => `${id}~${cod(n)}`).join('.');
     return `${base}#l=${itens}${ns ? `!${ns}` : ''}`;
   };
@@ -668,10 +730,11 @@
       const [itens, ns = ''] = m[1].split('!');
       let n = 0;
       itens.split('.').forEach((t) => {
-        const [id, i, q] = t.split('~'), p = byId.get(id), s = p && p.s[Number(i)], qt = Math.min(MAXQ, parseInt(q, 10) || 0);
+        const [id, i, q, c0] = t.split('~'), p = byId.get(id), s = p && p.s[Number(i)], qt = Math.min(MAXQ, parseInt(q, 10) || 0);
+        const c = CORES.some((x) => x[0] === c0) ? c0 : '';
         if (!s || qt < 1) return;
-        const ex = lista.find((l) => l.id === id && l.h === s.h);
-        if (ex) ex.q = Math.max(ex.q, qt); else lista.push({ id, h: s.h, q: qt });
+        const ex = lista.find((l) => mesma(l, { id, h: s.h, c }));
+        if (ex) ex.q = Math.max(ex.q, qt); else lista.push({ id, h: s.h, c, q: qt });
         n++;
       });
       ns.split('.').forEach((t) => {
@@ -704,14 +767,14 @@
     blocos.forEach(([titulo, ids]) => {
       if (blocos.length > 1) { linha(); linha(`▸ *${titulo.toUpperCase()}*`); }
       ids.forEach((id) => {
-        const p = byId.get(id), ls = linhasDe(id);
+        const p = byId.get(id), ls = ordenadas(id);
         n++;
         linha();
         linha(`*${n}. ${p.tipo} ${p.n}*`);
         linha(`${p.cat.n}${p.g && p.c !== 'medalhas' ? ` · ${p.g}` : ''}${p.k ? ` · Cód. ${p.k}` : ''}`);
         ls.forEach((l) => {
           const v = CFG.mostrarPrecos ? ` — ${money(sizeOf(p, l.h).p * l.q)}` : '';
-          linha(`• ${l.h.replace(/^(\d+)cm/, '$1 cm')}: ${num(l.q)} ${l.q === 1 ? 'unidade' : 'unidades'}${v}`);
+          linha(`• ${l.h.replace(/^(\d+)cm/, '$1 cm')}${l.c ? ` · ${corNome(l.c)}` : ''}: ${num(l.q)} ${l.q === 1 ? 'unidade' : 'unidades'}${v}`);
         });
         if (notas[id]) linha(`✎ Personalização: ${notas[id]}`);
       });
