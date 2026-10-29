@@ -255,15 +255,15 @@ button, input, select { font: inherit; color: inherit; }
   background-size: 80px 80px; background-position: center;
   -webkit-mask-image: radial-gradient(50% 55% at 66% 50%, #000, transparent 75%); mask-image: radial-gradient(50% 55% at 66% 50%, #000, transparent 75%);
 }
-.an-copy { position: relative; z-index: 2; min-height: 0; padding: calc(110px + 4vh) 0 48px calc(var(--gut) + 40px); display: flex; flex-direction: column; }
-.an-title { font-size: clamp(34px, 3.4vw, 64px); line-height: .95; max-width: 13ch; }
+.an-copy { position: relative; z-index: 2; min-height: 0; padding: calc(96px + 3vh) 0 min(48px, 4vh) calc(var(--gut) + 40px); display: flex; flex-direction: column; }
+.an-title { font-size: clamp(28px, min(3.4vw, 5.4vh), 64px); line-height: .95; max-width: 13ch; }
 .an-title .serif { display: block; font-size: 1.1em; line-height: .95; color: var(--gold); }
 .an-steps { list-style: none; margin: auto 0 0; padding: 0; border-top: 1px solid var(--line); max-width: 420px; }
-.an-steps li { border-bottom: 1px solid var(--line); padding: 16px 0; opacity: .34; transition: opacity .5s var(--ease); }
+.an-steps li { border-bottom: 1px solid var(--line); padding: clamp(6px, 1.25vh, 16px) 0; opacity: .34; transition: opacity .5s var(--ease); }
 .an-steps li.is-on { opacity: 1; }
 .an-steps .row { display: flex; align-items: baseline; gap: 18px; }
 .an-steps .n { font: 400 13px/1 var(--display); color: var(--red); letter-spacing: .06em; width: 22px; }
-.an-steps .t { font: 400 clamp(22px, 1.8vw, 30px)/1 var(--display); text-transform: uppercase; }
+.an-steps .t { font: 400 clamp(19px, min(1.8vw, 3.2vh), 30px)/1 var(--display); text-transform: uppercase; }
 .an-steps .dsc { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .6s var(--ease); }
 .an-steps .dsc > p { overflow: hidden; margin: 0; padding-left: 40px; font-size: 15px; line-height: 1.5; opacity: .78; }
 .an-steps li.is-on .dsc { grid-template-rows: 1fr; }
@@ -271,7 +271,7 @@ button, input, select { font: inherit; color: inherit; }
 .an-case { margin: 22px 0 0; font: 500 10.5px/1.5 var(--sans); letter-spacing: .18em; text-transform: uppercase; opacity: .5; max-width: 420px; }
 
 .an-stage { position: relative; display: grid; place-items: center; perspective: 1900px; perspective-origin: 50% 40%; }
-.an-rig { position: relative; height: min(76vh, 118vw); aspect-ratio: 760 / 1330; transform-style: preserve-3d; will-change: transform; }
+.an-rig { position: relative; height: min(76vh, 118vw); aspect-ratio: 714 / 1330; transform-style: preserve-3d; will-change: transform; }
 .lyr { position: absolute; inset: 0; transform-style: preserve-3d; transition: opacity .6s var(--ease); }
 .lyr-in { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .8s var(--ease); }
 .lyr img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
@@ -737,6 +737,12 @@ button, input, select { font: inherit; color: inherit; }
   .ft-word { margin: 36px 0 -.1em; font-size: 25vw; line-height: .82; white-space: normal; }
   .ft-word b { display: block; }
   .ft-legal { flex-direction: column; gap: 8px; padding: 18px 0 calc(24px + env(safe-area-inset-bottom)); }
+}
+
+/* Telas baixas: as 6 etapas da anatomia precisam caber */
+@media (min-width: 821px) and (max-height: 680px) {
+  .an.is-steps .an-title { display: none; }
+  .an-case { display: none; }
 }
 
 /* Celular deitado: layout desktop, mas respeitando a pouca altura */

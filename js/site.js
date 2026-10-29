@@ -45,7 +45,7 @@
   // Espessura física das camadas do troféu: cópias escuras atrás de cada camada
   $$('.lyr-in').forEach((inn) => {
     const main = inn.querySelector('img');
-    const n = isMob() ? 1 : inn.parentElement.dataset.l === '4' ? 1 : inn.parentElement.dataset.l === '2' ? 2 : 3;
+    const l = inn.parentElement.dataset.l, n = isMob() || l === '0' || l === '5' ? 1 : l === '1' ? 3 : 2;
     for (let k = n; k >= 1; k--) {
       const g = main.cloneNode(); g.alt = ''; g.className = `g g${k}`; g.setAttribute('aria-hidden', 'true');
       inn.insertBefore(g, main);
@@ -376,20 +376,21 @@
     /* 02 · ANATOMIA — o troféu se desmonta em camadas reais */
     const an = $('.an'), rig = $('.an-rig'), L = $$('.lyr'), steps = $$('.an-steps li');
     // Desktop: explosão em profundidade. Celular: explosão vertical, que cabe no retrato.
-    const Z = desk ? [-240, -80, 125, 35, 225] : [-60, 0, 90, 10, 80];
-    const Y = desk ? [0, 0, 0, 8, 13] : [-14, -5, 0, 11, 18];
+    // Camadas, de trás para a frente: base, corpo, verde, dourado, peça central, placa
+    const Z = desk ? [30, -220, -90, 40, 150, 250] : [10, -60, -20, 20, 60, 90];
+    const Y = desk ? [9, 0, 0, 0, 0, 4] : [18, -14, -8, -3, 3, 12];
     const S0 = desk ? .3 : .24, S1 = desk ? .86 : .84;
     let step = -2;
     const setStep = (p) => {
       an.classList.toggle('is-past', p >= S0);
-      const i = p >= S0 && p < S1 ? Math.min(4, Math.floor((p - S0) / ((S1 - S0) / 5))) : -1;
+      const i = p >= S0 && p < S1 ? Math.min(L.length - 1, Math.floor((p - S0) / ((S1 - S0) / L.length))) : -1;
       if (i === step) return;
       step = i;
       an.classList.toggle('is-steps', i >= 0);
       steps.forEach((s, k) => s.classList.toggle('is-on', k === i));
       L.forEach((l, k) => l.classList.toggle('is-on', k === i));
     };
-    const sheen2 = $('.lyr[data-l="1"] .sheen');
+    const sheen2 = $('.lyr[data-l="4"] .sheen');
     const at = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: an, start: 'top top', end: 'bottom bottom', scrub: .9,
       onUpdate: (s) => { setStep(s.progress); an.classList.toggle('is-end', s.progress > .9); } } });
     at.fromTo(rig, { rotationY: 0, rotationX: 0, scale: .92 }, { rotationY: desk ? -34 : -14, rotationX: desk ? 9 : 16, scale: 1, duration: desk ? .2 : .17, ease: 'power2.inOut' }, .05)

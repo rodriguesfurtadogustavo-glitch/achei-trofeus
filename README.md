@@ -11,7 +11,7 @@ Para testar localmente: `python3 -m http.server` dentro da pasta e abra http://l
 - `js/site.js` — direção de movimento (cenas, revelação a laser, hover, orçamento).
 - `js/gsap.min.js`, `js/ScrollTrigger.min.js` (GSAP 3.12.5) e `js/lenis.min.js` (Lenis 1.1.14).
 - `img/` — fotos do Instagram da Achei, recortadas, ampliadas 4× (Real-ESRGAN) e em WebP;
-  `img/cut/` são os produtos com fundo removido; `img/judo/` são as 5 camadas da desmontagem.
+  `img/cut/` são os produtos com fundo removido; `img/bananinha/` são as 6 camadas da desmontagem (troféu Bananinha Cup).
 
 ## Informações usadas — todas vêm do material enviado (confirmar com a Achei antes de publicar)
 - "+20 mil eventos premiados", "Todo o Brasil", "CEO @karuliny.t.r" — bio do Instagram.
@@ -27,7 +27,7 @@ Para testar localmente: `python3 -m http.server` dentro da pasta e abra http://l
 ## Próximos passos recomendados
 - Substituir as fotos do Instagram por originais em alta resolução (a mesma diagramação aceita).
 - Se houver vídeo da fábrica (laser cortando), ele pode entrar no lugar de `laserbeam.webp`.
-- Logo: o símbolo no header é um desenho provisório; trocar pelo SVG oficial da marca.
+- Logo: o símbolo do header e o favicon foram vetorizados da logo enviada (150 px); trocar pelo SVG original da marca quando houver.
 
 ## Mobile (≤ 820px) — projetado à parte
 - Hero em coluna (palavra → produto → ação); "ETERNIZAMOS" em contorno e "CONQUISTAS." sólido.
