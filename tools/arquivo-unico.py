@@ -38,6 +38,7 @@ def build(name):
         pre = f'<script>{cat_imgs()}</script>\n' if src == 'js/catalogo-data.js' else ''
         return f'{pre}<script>\n{js(src)}\n</script>'
     s = re.sub(r'<script src="([^"]+)"></script>', scr, s)
+    s = re.sub(r'href="(img/[\w/.-]+\.png)"', lambda m: f'href="{uri(m.group(1))}"', s)
     s = re.sub(r'(src|content)="(img/[\w/.-]+\.(?:webp|png))"', lambda m: f'{m.group(1)}="{uri(m.group(2))}"' if m.group(1) == 'src' else m.group(0), s)
     open(f'{OUT}/{name}', 'w').write(s)
     left = re.findall(r'(?:src|href)="((?:img|css|js|fonts)/[^"]+)"', s)
