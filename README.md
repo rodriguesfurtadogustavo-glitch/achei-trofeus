@@ -48,6 +48,9 @@ Usa as mesmas fontes e fotos do site (`../fonts`, `../img`); CSS e JS ficam em `
   dobro das medalhas, pedido de R$ 15.000 e demais produtos 15% a 30% OFF). As chamas são partículas em canvas
   (bloco "Fogo" do `prevenda.js`), só animam com o card na tela e esquentam no hover; com movimento reduzido
   ficam paradas. Quando a 1ª hora fecha, o card dela apaga; o do pacote de R$ 15.000 recalcula para a janela atual.
+- **Fogo em volta:** a linha do pacote de R$ 5.000 (que libera o Mundial), o botão R$ 5.000 do comparativo,
+  a coluna da 1ª hora e o card da 1ª hora têm chamas pelo contorno (canvas fixo por cima da página, bloco
+  "Fogo em volta" do `prevenda.js`; a lista de elementos fica em `T`). A 1ª hora apaga quando fecha.
 - `prevenda/prevenda.js` — **todas as regras da campanha ficam no bloco `DADOS` no topo**: datas das
   janelas, pacotes, extras, sorteios, preços do Mundial, médias de medalha (R$ 11,29) e troféu (R$ 20,79).
   O simulador, a tabela "O mesmo pedido em cada janela", os itens liberados e a linha destacada

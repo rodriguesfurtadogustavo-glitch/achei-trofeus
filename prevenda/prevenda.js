@@ -588,6 +588,22 @@
      ponta) + faíscas. Só anima o que está na tela; com movimento reduzido,
      desenha um quadro parado.
      ====================================================================== */
+  /* Sprites de fogo: gradientes radiais do miolo amarelo à ponta vermelha */
+  function fireSprites(n, ramp) {
+    var RAMP = ramp || [[255, 244, 210], [255, 224, 140], [255, 186, 66], [255, 138, 28], [246, 94, 12], [220, 56, 8], [158, 28, 6], [78, 12, 4]];
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      var t = i / (n - 1), f = t * (RAMP.length - 1), k = Math.floor(f), m = f - k;
+      var A = RAMP[k], B = RAMP[Math.min(k + 1, RAMP.length - 1)];
+      var col = [0, 1, 2].map(function (j) { return Math.round(A[j] + (B[j] - A[j]) * m); }).join(',');
+      var sc = document.createElement('canvas'); sc.width = sc.height = 64;
+      var g = sc.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gr.addColorStop(0, 'rgba(' + col + ',1)'); gr.addColorStop(.38, 'rgba(' + col + ',.5)'); gr.addColorStop(1, 'rgba(' + col + ',0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 64, 64); out.push(sc);
+    }
+    return out;
+  }
+
   var hotCards = $$('.hot');
   function syncHot(f) {
     hotCards.forEach(function (c) {
@@ -616,17 +632,7 @@
     if (!hotCards.length || !window.HTMLCanvasElement) return;
     // Chama é macia: desenhar a 60% da resolução não muda o visual e custa bem menos.
     var DPR = .6;
-    var RAMP = [[255, 244, 210], [255, 224, 140], [255, 186, 66], [255, 138, 28], [246, 94, 12], [220, 56, 8], [158, 28, 6], [78, 12, 4]];
-    var NS = 24, SPR = [];
-    for (var i = 0; i < NS; i++) {
-      var t = i / (NS - 1), f = t * (RAMP.length - 1), k = Math.floor(f), m = f - k;
-      var A = RAMP[k], B = RAMP[Math.min(k + 1, RAMP.length - 1)];
-      var col = [0, 1, 2].map(function (j) { return Math.round(A[j] + (B[j] - A[j]) * m); }).join(',');
-      var sc = document.createElement('canvas'); sc.width = sc.height = 64;
-      var g = sc.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gr.addColorStop(0, 'rgba(' + col + ',1)'); gr.addColorStop(.38, 'rgba(' + col + ',.5)'); gr.addColorStop(1, 'rgba(' + col + ',0)');
-      g.fillStyle = gr; g.fillRect(0, 0, 64, 64); SPR.push(sc);
-    }
+    var NS = 24, SPR = fireSprites(NS);
 
     var F = hotCards.map(function (el) {
       var cv = document.createElement('canvas');
@@ -764,6 +770,215 @@
     document.addEventListener('visibilitychange', kick);
     if (window.ResizeObserver) new ResizeObserver(function () { F.forEach(size); }).observe(hotCards[0].parentElement);
     else window.addEventListener('resize', function () { F.forEach(size); });
+  })();
+
+  /* ======================================================================
+     Fogo em volta: chamas pelo contorno de elementos escolhidos
+     Um canvas fixo por cima da página (as tabelas e caixas cortam o que sai
+     da borda). As partículas vivem em coordenadas do elemento, então o fogo
+     acompanha a rolagem. O miolo é limpo a cada quadro para o texto ficar
+     legível. A 1ª hora apaga quando fecha; o resto apaga quando a pré-venda
+     encerra.
+     ====================================================================== */
+  (function () {
+    if (!window.HTMLCanvasElement) return;
+    var q = function (s) { return document.querySelector(s); };
+    var union = function (a, b) {
+      if (!a || !b) return null;
+      var ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      var l = Math.min(ra.left, rb.left), t = Math.min(ra.top, rb.top);
+      var r = Math.max(ra.right, rb.right), b = Math.max(ra.bottom, rb.bottom);
+      return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t };
+    };
+    var T = [
+      { els: function () { return $$('#pkTbl tbody tr[data-min="5000"]'); }, heat: .95, size: 1.3, r: null, light: true, out: function () { return faseAtual >= 3; } },
+      { els: function () { return $$('#cmpChips [data-v="5000"]'); }, heat: 1.5, size: .75, r: null, out: function () { return faseAtual >= 3; } },
+      { els: function () { return $$('#cmpTbl .c1'); }, heat: 1.1, size: .9, r: 14, out: function () { return faseAtual >= 1; },
+        rect: function () { return union(q('#cmpTbl thead .c1'), q('#cmpTbl tbody tr:last-child .c1')); } },
+      { els: function () { return $$('#wGrid .w--1'); }, heat: 1.3, size: 1.05, r: null, out: function () { return faseAtual >= 1; } }
+    ].map(function (t) {
+      t.list = t.els();
+      t.ps = []; t.acc = 0; t.off = null; t.vis = false;
+      if (!t.rect) t.rect = function () { return t.list[0] ? t.list[0].getBoundingClientRect() : null; };
+      return t;
+    }).filter(function (t) { return t.list.length; });
+    if (!T.length) return;
+
+    var cv = document.createElement('canvas');
+    cv.className = 'fire-ring'; cv.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(cv);
+    var ctx = cv.getContext('2d'), SC = .6, VW = 0, VH = 0;
+    var NS = 24, SPR = fireSprites(NS);
+    // No fundo claro (creme), fogo aditivo some: usa tons saturados com mistura normal
+    var SPR_L = fireSprites(NS, [[255, 196, 60], [255, 150, 30], [248, 110, 16], [232, 74, 10], [206, 44, 8], [170, 26, 6], [130, 16, 4], [90, 10, 4]]);
+
+    function radii() {
+      T.forEach(function (t) {
+        if (t.fixedR === undefined) t.fixedR = t.r;
+        var r = t.fixedR;
+        if (r === null) { r = parseFloat(getComputedStyle(t.list[0]).borderTopLeftRadius); if (isNaN(r)) r = 0; }
+        t.rad = r;
+      });
+    }
+    function size() {
+      VW = window.innerWidth; VH = window.innerHeight;
+      cv.width = Math.round(VW * SC); cv.height = Math.round(VH * SC);
+      radii();
+    }
+    size();
+
+    function states() {
+      T.forEach(function (t) {
+        var off = t.out();
+        if (off === t.off) return;
+        t.off = off;
+        t.list.forEach(function (el) { el.classList.toggle('on-fire', !off); });
+      });
+    }
+    states();
+
+    // Ponto aleatório no contorno arredondado, com a normal para fora
+    function spot(w, h, r, u01) {
+      r = Math.max(0, Math.min(r, w / 2, h / 2));
+      var sw = w - 2 * r, sh = h - 2 * r, arc = Math.PI * r / 2;
+      var segs = [sw, arc, sh, arc, sw, arc, sh, arc], L = 2 * sw + 2 * sh + 4 * arc;
+      var u = u01 * L, i = 0;
+      while (i < 7 && u > segs[i]) { u -= segs[i]; i++; }
+      var k = segs[i] ? u / segs[i] : 0, a;
+      switch (i) {
+        case 0: return { x: r + k * sw, y: 0, nx: 0, ny: -1 };
+        case 1: a = -Math.PI / 2 + k * Math.PI / 2; return { x: w - r + Math.cos(a) * r, y: r + Math.sin(a) * r, nx: Math.cos(a), ny: Math.sin(a) };
+        case 2: return { x: w, y: r + k * sh, nx: 1, ny: 0 };
+        case 3: a = k * Math.PI / 2; return { x: w - r + Math.cos(a) * r, y: h - r + Math.sin(a) * r, nx: Math.cos(a), ny: Math.sin(a) };
+        case 4: return { x: w - r - k * sw, y: h, nx: 0, ny: 1 };
+        case 5: a = Math.PI / 2 + k * Math.PI / 2; return { x: r + Math.cos(a) * r, y: h - r + Math.sin(a) * r, nx: Math.cos(a), ny: Math.sin(a) };
+        case 6: return { x: 0, y: h - r - k * sh, nx: -1, ny: 0 };
+        default: a = Math.PI + k * Math.PI / 2; return { x: r + Math.cos(a) * r, y: r + Math.sin(a) * r, nx: Math.cos(a), ny: Math.sin(a) };
+      }
+    }
+
+    function step(t, R, dt, time) {
+      var heat = t.off ? 0 : t.heat, s = t.size;
+      var per = 2 * (R.width + R.height);
+      // línguas de fogo: as partículas nascem agrupadas, e cada grupo oscila
+      var n = Math.max(4, Math.round(per / 70));
+      if (!t.tg || t.tg.length !== n) { t.tg = []; for (var g = 0; g < n; g++) t.tg.push({ ph: Math.random() * 6.28, sp: .5 + Math.random() }); }
+      t.acc += dt * per * .17 * heat;
+      while (t.acc >= 1) {
+        t.acc--;
+        var j = Math.floor(Math.random() * n), tg = t.tg[j];
+        var u01 = ((j + .5 + (Math.random() + Math.random() - 1) * .22 + .3 * Math.sin(time * tg.sp + tg.ph)) / n) % 1;
+        if (u01 < 0) u01 += 1;
+        var p = spot(R.width, R.height, t.rad, u01);
+        var keep = p.ny < 0 ? .85 + .15 * -p.ny : .85 - .55 * p.ny;
+        if (Math.random() > keep) continue;
+        var under = p.ny > .5;
+        t.ps.push({
+          x: p.x + p.nx * 2, y: p.y + p.ny * 2,
+          vx: p.nx * (10 + Math.random() * 26) * s + (Math.random() - .5) * 10,
+          vy: under ? (6 + Math.random() * 16) * s : -(40 + Math.random() * 70) * s + p.ny * (8 + Math.random() * 18) * s,
+          r: (7 + Math.random() * 9) * (.6 + .4 * s) * (under ? .8 : 1),
+          t: 0, life: under ? .28 + Math.random() * .25 : .35 + Math.random() * .5, ph: Math.random() * 6.28
+        });
+      }
+      for (var i = t.ps.length - 1; i >= 0; i--) {
+        var q2 = t.ps[i]; q2.t += dt;
+        if (q2.t >= q2.life) { t.ps.splice(i, 1); continue; }
+        q2.vy -= 70 * s * dt;
+        q2.vx *= 1 - dt * 2.2;
+        q2.x += (q2.vx + Math.sin(time * 7 + q2.ph + q2.y * .05) * 9) * dt;
+        q2.y += q2.vy * dt;
+      }
+    }
+
+    function rr(x, y, w, h, r) {
+      r = Math.max(0, Math.min(r, w / 2, h / 2));
+      ctx.beginPath();
+      ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+      ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+      ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+      ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+    }
+
+    function draw(time) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      ctx.setTransform(SC, 0, 0, SC, 0, 0);
+      T.forEach(function (t) {
+        if (!t.vis || !t.R) return;
+        var R = t.R, i, p, k, rd, rw, rh;
+        var sp = t.light ? SPR_L : SPR;
+        ctx.globalCompositeOperation = t.light ? 'source-over' : 'lighter';
+        for (i = 0; i < t.ps.length; i++) {
+          p = t.ps[i]; k = p.t / p.life;
+          rd = p.r * (1 - k * .65); rw = rd * .8; rh = rd * 1.7;
+          ctx.globalAlpha = (k < .12 ? k / .12 : Math.pow(1 - k, 1.1)) * (t.light ? .78 : .75);
+          ctx.drawImage(sp[Math.min(NS - 1, Math.floor(k * NS))], R.left + p.x - rw, R.top + p.y - rh * .7, rw * 2, rh * 2);
+        }
+        ctx.globalAlpha = 1;
+        // miolo limpo: o fogo fica em volta, o texto continua legível
+        ctx.globalCompositeOperation = 'destination-out';
+        rr(R.left + 2, R.top + 2, R.width - 4, R.height - 4, Math.max(0, t.rad - 2));
+        ctx.fill();
+        if (t.off) return;
+        // borda em brasa
+        ctx.globalCompositeOperation = t.light ? 'source-over' : 'lighter';
+        var fl = .55 + .25 * Math.sin(time * 9 + R.left * .01) + .15 * Math.sin(time * 23);
+        rr(R.left + .5, R.top + .5, R.width - 1, R.height - 1, t.rad);
+        ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(255, 90, 10, ' + (.16 * fl) + ')'; ctx.stroke();
+        ctx.lineWidth = 1.6; ctx.strokeStyle = 'rgba(255, 150, 50, ' + fl + ')'; ctx.stroke();
+      });
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    function measure() {
+      var any = false;
+      T.forEach(function (t) {
+        var R = t.rect();
+        t.vis = !!R && R.width > 0 && R.bottom > -140 && R.top < VH + 140;
+        t.R = R;
+        if (!t.vis) t.ps = [];
+        if (t.vis && (!t.off || t.ps.length)) any = true;
+      });
+      return any;
+    }
+
+    if (RM) {
+      // Movimento reduzido: fogo formado e parado, redesenhado só ao rolar
+      var built = false;
+      var still = function () {
+        states(); measure();
+        if (!built) {
+          T.forEach(function (t) { var R = t.rect(); if (!R || !R.width) return; for (var n = 0; n < 50; n++) step(t, R, 1 / 60, n / 60); });
+          built = true;
+        }
+        draw(0);
+      };
+      var pend = false;
+      var onScroll = function () { if (pend) return; pend = true; requestAnimationFrame(function () { pend = false; still(); }); };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', function () { size(); built = false; still(); });
+      still();
+      return;
+    }
+
+    var raf = 0, last = 0;
+    function loop(now) {
+      raf = 0;
+      var dt = Math.min(.05, (now - last) / 1000 || .016), time = now / 1000;
+      last = now;
+      states();
+      var any = measure();
+      T.forEach(function (t) { if (t.vis) step(t, t.R, dt, time); });
+      draw(time);
+      if (any && !document.hidden) raf = requestAnimationFrame(loop);
+    }
+    function kick() { if (!raf && !document.hidden) { last = performance.now(); raf = requestAnimationFrame(loop); } }
+    window.addEventListener('scroll', kick, { passive: true });
+    window.addEventListener('resize', function () { size(); kick(); });
+    document.addEventListener('visibilitychange', kick);
+    kick();
   })();
 
   /* ======================================================================
