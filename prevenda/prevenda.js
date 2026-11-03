@@ -249,7 +249,7 @@
       if (st.innerHTML !== txt) st.innerHTML = txt;
     });
 
-    if (f !== faseAtual) { faseAtual = f; syncSeg(); }
+    if (f !== faseAtual) { faseAtual = f; syncSeg(); syncHot(f); }
   }
 
   function syncSeg() {
@@ -583,10 +583,194 @@
   })();
 
   /* ======================================================================
+     Fogo: chamas em canvas nos cards das melhores ofertas
+     Partículas com mistura aditiva (amarelo no miolo, laranja, vermelho na
+     ponta) + faíscas. Só anima o que está na tela; com movimento reduzido,
+     desenha um quadro parado.
+     ====================================================================== */
+  var hotCards = $$('.hot');
+  function syncHot(f) {
+    hotCards.forEach(function (c) {
+      var from = c.getAttribute('data-out-from');
+      var out = f >= 3 || (from !== null && f >= +from);
+      c.classList.toggle('is-out', out);
+      var msg = $('.hot-out', c);
+      if (msg) msg.textContent = !out ? '' : f >= 3 ? 'Apagou: a pré-venda foi encerrada.' : 'Apagou: a 1ª hora fechou. Janela que fecha não volta.';
+    });
+    // Card do maior pacote acompanha a janela atual
+    var w = f >= 0 && f <= 2 ? f : 0, r = calc(15000, w);
+    var n = $('#hot15n'), l = $('#hot15l'), pp = $('#hot15p');
+    if (n) {
+      n.textContent = r.medalhas;
+      l.textContent = 'medalhas grátis, ' + JANELAS[w].na;
+      var parts = [r.p.m + ' do pacote'];
+      if (r.dobro) parts.push(r.dobro + ' do dobro');
+      if (r.janela) parts.push(r.janela + ' da janela');
+      pp.innerHTML = parts.join(' + ') + ', mais <b>' + r.trofeus + ' troféus</b> e gravação do nome em troféu ou copo.';
+      var a = $('.hot--3 .hot-cta');
+      if (a) a.setAttribute('data-sim', '15000,' + w);
+    }
+  }
+
+  (function () {
+    if (!hotCards.length || !window.HTMLCanvasElement) return;
+    // Chama é macia: desenhar a 60% da resolução não muda o visual e custa bem menos.
+    var DPR = .6;
+    var RAMP = [[255, 244, 210], [255, 224, 140], [255, 186, 66], [255, 138, 28], [246, 94, 12], [220, 56, 8], [158, 28, 6], [78, 12, 4]];
+    var NS = 24, SPR = [];
+    for (var i = 0; i < NS; i++) {
+      var t = i / (NS - 1), f = t * (RAMP.length - 1), k = Math.floor(f), m = f - k;
+      var A = RAMP[k], B = RAMP[Math.min(k + 1, RAMP.length - 1)];
+      var col = [0, 1, 2].map(function (j) { return Math.round(A[j] + (B[j] - A[j]) * m); }).join(',');
+      var sc = document.createElement('canvas'); sc.width = sc.height = 64;
+      var g = sc.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gr.addColorStop(0, 'rgba(' + col + ',1)'); gr.addColorStop(.38, 'rgba(' + col + ',.5)'); gr.addColorStop(1, 'rgba(' + col + ',0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 64, 64); SPR.push(sc);
+    }
+
+    var F = hotCards.map(function (el) {
+      var cv = document.createElement('canvas');
+      cv.className = 'flame'; cv.setAttribute('aria-hidden', 'true');
+      el.insertBefore(cv, el.firstChild);
+      var st = { el: el, cv: cv, ctx: cv.getContext('2d'), w: 0, h: 0, ps: [], em: [], acc: 0, eacc: 0, heat: +el.getAttribute('data-heat') || 1, boost: 1, want: 1, vis: false, seed: Math.random() * 100 };
+      var up = function () { st.want = 1.55; kick(); }, down = function () { st.want = 1; };
+      el.addEventListener('pointerenter', up);
+      el.addEventListener('pointerleave', down);
+      el.addEventListener('focusin', up);
+      el.addEventListener('focusout', down);
+      return st;
+    });
+
+    function size(st) {
+      st.w = st.el.clientWidth; st.h = st.el.clientHeight;
+      st.cv.width = Math.round(st.w * DPR); st.cv.height = Math.round(st.h * DPR);
+      st.ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
+    F.forEach(size);
+
+    function tongues(st) {
+      var n = Math.max(3, Math.round(st.w / 64)), list = [];
+      for (var i = 0; i < n; i++) list.push({ base: (i + .5) / n, ph: Math.random() * 6.28, sp: .6 + Math.random() * .9, amp: .35 + Math.random() * .4 });
+      st.tg = list;
+    }
+    function tongueX(st, tg, time) {
+      return st.w * (tg.base + Math.sin(time * tg.sp + tg.ph) * (tg.amp / st.tg.length));
+    }
+
+    function step(st, dt, time) {
+      var w = st.w, h = st.h, out = st.el.classList.contains('is-out');
+      if (!st.tg || st.tg.length !== Math.max(3, Math.round(w / 64))) tongues(st);
+      st.boost += (st.want - st.boost) * Math.min(1, dt * 3);
+      var heat = out ? 0 : st.heat * st.boost;
+      var s = Math.max(.75, Math.min(1.35, w / 420));
+      // chamas: línguas que oscilam e afinam na ponta, sobre um leito de brasa
+      st.acc += dt * 175 * heat * (w / 380);
+      while (st.acc >= 1) {
+        st.acc--;
+        var bed = Math.random() < .3;
+        var ti = Math.floor(Math.random() * st.tg.length), tg = st.tg[ti];
+        var strength = .7 + .3 * Math.sin(time * (2.2 + tg.sp) + tg.ph * 3);
+        var x = bed ? w * Math.random() : tongueX(st, tg, time) + (Math.random() + Math.random() - 1) * 20 * s;
+        var life = bed ? .3 + Math.random() * .3 : .5 + Math.random() * .6;
+        var H = h * (.2 + .17 * heat) * (bed ? .3 : strength);
+        st.ps.push({ x: x, y: h + 8, vx: 0, vy: -(H / life) * (.75 + Math.random() * .5), r: (bed ? 14 + Math.random() * 13 : 15 + Math.random() * 18) * s, t: 0, life: life, ph: Math.random() * 6.28, ti: bed ? -1 : ti });
+      }
+      // faíscas
+      st.eacc += dt * 8 * heat;
+      while (st.eacc >= 1) {
+        st.eacc--;
+        st.em.push({ x: w * Math.random(), y: h - Math.random() * h * .12, vx: (Math.random() - .5) * 30, vy: -(80 + Math.random() * 140) * s, r: .7 + Math.random() * 1.5, t: 0, life: 1.3 + Math.random() * 1.7, ph: Math.random() * 6.28 });
+      }
+      var i, p;
+      for (i = st.ps.length - 1; i >= 0; i--) {
+        p = st.ps[i]; p.t += dt;
+        if (p.t >= p.life) { st.ps.splice(i, 1); continue; }
+        if (p.ti >= 0 && st.tg[p.ti]) p.x += (tongueX(st, st.tg[p.ti], time) - p.x) * Math.min(1, dt * 2.6);
+        p.x += Math.sin(time * 6 + p.ph + p.y * .03) * 10 * s * dt;
+        p.vy *= 1 + dt * .5;
+        p.y += p.vy * dt;
+      }
+      for (i = st.em.length - 1; i >= 0; i--) {
+        p = st.em[i]; p.t += dt;
+        if (p.t >= p.life || p.y < -10) { st.em.splice(i, 1); continue; }
+        p.x += (p.vx + Math.sin(time * 2 + p.ph) * 26) * dt;
+        p.y += p.vy * dt;
+      }
+    }
+
+    function draw(st) {
+      var c = st.ctx, i, p, k, rd, a, rw, rh;
+      c.globalCompositeOperation = 'source-over';
+      c.clearRect(0, 0, st.w, st.h);
+      c.globalCompositeOperation = 'lighter';
+      for (i = 0; i < st.ps.length; i++) {
+        p = st.ps[i]; k = p.t / p.life;
+        rd = p.r * (1 - k * .7);
+        rw = rd * .8; rh = rd * 1.45;
+        a = k < .1 ? k / .1 : Math.pow(1 - k, 1.1);
+        c.globalAlpha = a * .62;
+        c.drawImage(SPR[Math.min(NS - 1, Math.floor(k * NS))], p.x - rw, p.y - rh * .7, rw * 2, rh * 2);
+      }
+      for (i = 0; i < st.em.length; i++) {
+        p = st.em[i]; k = p.t / p.life;
+        c.globalAlpha = Math.max(0, (1 - k) * (.55 + .45 * Math.sin(p.t * 22 + p.ph)));
+        rd = p.r * 5;
+        c.drawImage(SPR[Math.min(NS - 1, 2 + Math.floor(k * 8))], p.x - rd, p.y - rd, rd * 2, rd * 2);
+      }
+      c.globalAlpha = 1;
+    }
+
+    var last = 0, raf = 0;
+    function kick() {
+      if (RM) return;
+      if (!raf && !document.hidden) { last = performance.now(); raf = requestAnimationFrame(loop); }
+    }
+
+    // Movimento reduzido: um quadro parado, já com o fogo formado
+    if (RM) {
+      var still = function () {
+        F.forEach(function (st) {
+          size(st); st.ps = []; st.em = [];
+          for (var n = 0; n < 110; n++) step(st, 1 / 60, n / 60);
+          draw(st);
+        });
+      };
+      still();
+      window.addEventListener('resize', still);
+      return;
+    }
+
+    function loop(now) {
+      raf = 0;
+      var dt = Math.min(.05, (now - last) / 1000 || .016), time = now / 1000;
+      last = now;
+      var busy = false;
+      F.forEach(function (st) {
+        if (!st.vis) return;
+        step(st, dt, time);
+        draw(st);
+        if (st.ps.length || st.em.length || !st.el.classList.contains('is-out')) busy = true;
+      });
+      if (busy && !document.hidden) raf = requestAnimationFrame(loop);
+    }
+
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { F.forEach(function (st) { if (st.el === e.target) st.vis = e.isIntersecting; }); });
+        kick();
+      }, { rootMargin: '120px 0px' });
+      F.forEach(function (st) { io.observe(st.el); });
+    } else { F.forEach(function (st) { st.vis = true; }); kick(); }
+    document.addEventListener('visibilitychange', kick);
+    if (window.ResizeObserver) new ResizeObserver(function () { F.forEach(size); }).observe(hotCards[0].parentElement);
+    else window.addEventListener('resize', function () { F.forEach(size); });
+  })();
+
+  /* ======================================================================
      Revelação ao rolar + barra fixa no celular
      ====================================================================== */
   (function () {
-    var sel = '.sec-h, .cat, .g, .acc-c, .pk-tbl-wrap, .w, .cmp-box, .faq-list details, .sim-box, .mun-copy, .mun-stage, .mun-tbl, .fin-in > *, .w-warn, .nosum';
+    var sel = '.sec-h, .hot, .cat, .g, .acc-c, .pk-tbl-wrap, .w, .cmp-box, .faq-list details, .sim-box, .mun-copy, .mun-stage, .mun-tbl, .fin-in > *, .w-warn, .nosum';
     var els = $$(sel);
     if (!('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('is-in'); }); return; }
     els.forEach(function (el) {
@@ -611,6 +795,7 @@
      Início
      ====================================================================== */
   syncSeg();
+  syncHot(faseAtual);
   render();
   tick();
   setInterval(tick, 1000);

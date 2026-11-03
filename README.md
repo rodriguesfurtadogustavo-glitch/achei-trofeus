@@ -44,6 +44,10 @@ Usa as mesmas fontes e fotos do site (`../fonts`, `../img`); CSS e JS ficam em `
 - `prevenda/index.html` — hero com contagem, Troféu Mundial -70% (seletor de tamanho), categorias,
   simulador de bônus (trilho arrastável, teclado e campo de valor), o que você ganha, regras de acúmulo,
   os 8 pacotes, janelas de velocidade, comparativo por janela, perguntas e CTA final.
+- **As melhores ofertas (pegando fogo):** logo após a faixa vermelha, 4 cards (Troféu Mundial -70%, 1ª hora com
+  dobro das medalhas, pedido de R$ 15.000 e demais produtos 15% a 30% OFF). As chamas são partículas em canvas
+  (bloco "Fogo" do `prevenda.js`), só animam com o card na tela e esquentam no hover; com movimento reduzido
+  ficam paradas. Quando a 1ª hora fecha, o card dela apaga; o do pacote de R$ 15.000 recalcula para a janela atual.
 - `prevenda/prevenda.js` — **todas as regras da campanha ficam no bloco `DADOS` no topo**: datas das
   janelas, pacotes, extras, sorteios, preços do Mundial, médias de medalha (R$ 11,29) e troféu (R$ 20,79).
   O simulador, a tabela "O mesmo pedido em cada janela", os itens liberados e a linha destacada
