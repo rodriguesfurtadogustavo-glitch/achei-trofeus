@@ -256,7 +256,6 @@ b, strong { font-weight: 650; }
    -------------------------------------------------------------------------- */
 @property --a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 .fire-sec { padding-top: clamp(110px, 12vw, 180px); background: radial-gradient(60% 45% at 50% 100%, rgba(255, 80, 10, .1), transparent 70%); }
-.fire-sec .eyebrow .ic { color: #ff7a1a; filter: drop-shadow(0 0 6px rgba(255, 110, 20, .8)); }
 .fire-text {
   background: linear-gradient(180deg, #fff7d6 0%, #ffd75e 26%, #ff9a1f 52%, #ff4d0a 76%, #d81f12 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -754,9 +753,8 @@ b, strong { font-weight: 650; }
 .fire-ring { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 55; pointer-events: none; }
 .pk-tbl tbody tr.on-fire > * { background: linear-gradient(180deg, rgba(255, 150, 50, .16), rgba(255, 90, 10, .07)); }
 .pk-tbl tbody tr.on.on-fire > * { background: linear-gradient(180deg, rgba(255, 110, 20, .22), rgba(255, 70, 0, .08)); }
-.pk-hot { display: inline-flex; align-items: center; gap: 5px; margin-left: 10px; padding: 4px 8px 4px 6px; border-radius: 6px; vertical-align: 5px;
+.pk-hot { display: inline-flex; align-items: center; gap: 5px; margin-left: 10px; padding: 4px 8px; border-radius: 6px; vertical-align: 5px;
   background: linear-gradient(90deg, #ff5a14, #d81f12); color: #fff; font: 700 9.5px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }
-.pk-hot svg { width: 11px; height: 11px; color: #ffe08a; }
 .cmp-chips button.on-fire { border-color: #ff7a1a; box-shadow: inset 0 0 14px rgba(255, 110, 20, .35); }
 .cmp-chips button.on-fire[aria-checked="true"] { box-shadow: inset 0 0 14px rgba(255, 110, 20, .5); }
 .cmp-tbl .c1.on-fire { background: linear-gradient(180deg, rgba(255, 130, 30, .16), rgba(255, 70, 0, .1)); }

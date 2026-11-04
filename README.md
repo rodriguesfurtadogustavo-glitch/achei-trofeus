@@ -61,6 +61,9 @@ Usa as mesmas fontes e fotos do site (`../fonts`, `../img`); CSS e JS ficam em `
   `?agora=`, por exemplo `/prevenda/?agora=2026-11-16T20:30` (1ª hora), `?agora=2026-11-17T10:00` (24h),
   `?agora=2026-11-19T00:00` (encerrada).
 
+### Regra de design
+- **Sem emojis ou ícones de fogo** (nem emoji, nem desenho de chama) em nenhuma página. O fogo é só o efeito animado.
+
 ### Antes de publicar (pendências da prévia)
 - **Link do grupo:** os botões "Entrar no grupo" (`data-cta="grupo"`) abrem o WhatsApp da Achei com
   mensagem pronta. Trocar pelo link de convite do grupo quando existir.
