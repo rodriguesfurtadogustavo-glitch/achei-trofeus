@@ -12,7 +12,7 @@
   var PACOTES = A.PACOTES, JANELAS = A.JANELAS, MUNDIAL = A.MUNDIAL, MARCAS = A.MARCAS;
   var IMG = '../../img/';
   var foto = function (p) { var I = window.ACHEI_FOTOS; return I && I[p] ? I[p] : IMG + p; };
-  var GRUPO = A.wa('Quero entrar no grupo da pré-venda Próxima Conquista da Achei Troféus');
+  var GRUPO = '../#cadastro';
   var app = $('#app');
 
   /* ======================================================================
@@ -170,8 +170,8 @@
   }
 
   // Painel "o que você garante" (página do kit, do modelo e carrinho)
-  function resumo(extra, titulo, rotulo) {
-    var t = totais(), vc = t.por + extra, v = vc / 100;
+  function resumo(extra, titulo, rotulo, semCarrinho) {
+    var t = totais(), vc = (semCarrinho ? 0 : t.por) + extra, v = vc / 100;
     var f = faseAgora(), w = janelaVista(), p = pacoteDe(v), r = calc(v, w);
     var h = '<div class="rs">';
     if (titulo) h += '<p class="rs-t">' + titulo + '</p>';
@@ -296,7 +296,8 @@
     if (VS.mod && VS.mod !== 'classificar' && !MODS[VS.mod]) VS.mod = '';
     return '<section class="lj-head wrap"><p class="eyebrow">Pré-venda · preços de campanha</p>' +
       '<h1 class="d lj-h1" tabindex="-1">Vitrine <span class="serif">da Próxima Conquista</span></h1>' +
-      '<p class="lede">Troféus, medalhas e kits com 15% a 30% OFF. Monte o carrinho agora e compre na abertura, 16/11 às 20h.</p></section>' +
+      '<p class="lede">Troféus, medalhas e kits com 15% a 30% OFF. Monte o carrinho agora e compre na abertura, 16/11 às 20h.</p>' +
+      '<a class="link lj-or-link" href="#/orcamento/300000">Montar por orçamento</a></section>' +
       '<div class="wrap lj-sticky"><div class="lj-tabs" id="vTabs">' + ABAS.map(function (a) {
         return '<button type="button" data-act="tab" data-v="' + a[0] + '">' + a[1] + '</button>';
       }).join('') + '</div></div>' +
@@ -594,6 +595,54 @@
   }
 
   /* ======================================================================
+     Orçamento: quanto quer investir → o bônus desse valor e os kits que cabem
+     (a página da oferta chega aqui por "Ver kits para este valor": #/orcamento/<centavos>)
+     ====================================================================== */
+  var OR = { v: 3000, mod: '' };
+  var OR_VALORES = [1300, 1500, 2000, 3000, 5000, 7500, 10000, 15000];
+  function orcamento(id, q) {
+    var c = Math.round(+(id || 0));
+    OR.v = c > 0 ? Math.round(c / 100) : 3000;
+    OR.mod = q.get('mod') || '';
+    return '<section class="lj-head wrap"><p class="eyebrow">Monte por orçamento</p>' +
+      '<h1 class="d lj-h1" tabindex="-1">Orçamento <span class="serif">do seu jeito</span></h1>' +
+      '<p class="lede">Diga quanto quer investir. A loja mostra o bônus que esse valor garante e os kits que cabem nele.</p></section>' +
+      '<section class="wrap lj-sec"><div class="lj-pg-grid"><div class="lj-pg-main">' +
+      '<div class="or-box"><label class="or-in" for="orVal"><span class="rs-t">Quanto quer investir?</span>' +
+      '<span class="or-f"><b>R$</b><input id="orVal" type="text" inputmode="numeric" autocomplete="off" value="' + OR.v + '"></span></label>' +
+      '<div class="pg-mult or-chips" role="group" aria-label="Valores dos pacotes">' + OR_VALORES.map(function (v) {
+        return '<button type="button" data-act="or-v" data-v="' + v + '">' + A.milhar(v) + '</button>';
+      }).join('') + '</div></div>' +
+      '<div class="lj-chips or-mods" id="orMods"></div><div id="orKits"></div>' +
+      '<p class="or-alt">Prefere montar peça por peça? <a href="#/vitrine">Ir para a vitrine</a></p></div>' +
+      '<aside class="lj-pg-side" id="orRes"></aside></div></section>';
+  }
+  function pintarOrcamento(semCampo) {
+    var v = OR.v;
+    try { history.replaceState(null, '', '#/orcamento/' + v * 100 + (OR.mod ? '?mod=' + OR.mod : '')); } catch (e) {}
+    if (!semCampo) { var inp = $('#orVal'); if (inp && document.activeElement !== inp) inp.value = v; }
+    $$('[data-act="or-v"]').forEach(function (b) { b.setAttribute('aria-pressed', +b.getAttribute('data-v') === v ? 'true' : 'false'); });
+    var conta = {};
+    KITS.forEach(function (k) { var m = k.mod || 'classificar'; conta[m] = (conta[m] || 0) + 1; });
+    var chips = [{ id: '', nome: 'Todas', ic: null }].concat(C.modalidades.filter(function (m) { return conta[m.id]; }), conta.classificar ? [SEM_MOD] : []);
+    $('#orMods').innerHTML = chips.map(function (c) {
+      return '<button type="button" data-act="or-mod" data-v="' + c.id + '" aria-pressed="' + (OR.mod === c.id) + '">' + (c.ic ? ico(c.ic) : '') +
+        '<span>' + c.nome + '</span><small>' + (c.id ? conta[c.id] : KITS.length) + '</small></button>';
+    }).join('');
+    var ks = KITS.filter(function (k) { return !OR.mod || (OR.mod === 'classificar' ? !k.mod : k.mod === OR.mod); });
+    var cabe = ks.filter(function (k) { return k.por / 100 <= v; }).sort(function (a, b) { return b.por - a.por; }).slice(0, 6);
+    var acima = ks.filter(function (k) { return k.por / 100 > v && k.por / 100 <= v * 1.35; }).sort(function (a, b) { return a.por - b.por; }).slice(0, 3);
+    var h = '<section class="or-sec"><h2 class="d">Cabem em ' + reais(v) + '</h2>' +
+      (cabe.length ? '<ul class="kt-grid kt-grid--or">' + cabe.map(cardKit).join('') + '</ul>'
+        : vazio(v < A.MIN_BONUS ? 'Os kits começam em R$ 1.300. Abaixo disso, monte na vitrine, com o desconto da campanha.' : 'Nenhum kit desta modalidade cabe neste valor.')) + '</section>';
+    if (acima.length) h += '<section class="or-sec"><h2 class="d">Um pouco acima, <span class="serif">com mais bônus</span></h2>' +
+      '<ul class="kt-grid kt-grid--or">' + acima.map(cardKit).join('') + '</ul></section>';
+    $('#orKits').innerHTML = h;
+    $('#orRes').innerHTML = resumo(v * 100, 'Com ' + reais(v) + ', você garante', 'Orçamento', true);
+    A.fogo.kick();
+  }
+
+  /* ======================================================================
      Carrinho
      ====================================================================== */
   function miniatura(it) {
@@ -610,7 +659,7 @@
       return h + '<section class="wrap lj-sec"><div class="lj-empty lj-empty--big">' + ico('i-cart') +
         '<p>Seu carrinho está vazio. Monte o pedido agora e compre na abertura, 16/11 às 20h.</p>' +
         '<div class="hero-cta"><a class="btn" href="#/vitrine?tab=kits"><span>Ver kits prontos</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>' +
-        '<a class="link" href="#/vitrine">Ver a vitrine</a></div></div></section>';
+        '<a class="link" href="#/orcamento/300000">Montar por orçamento</a><a class="link" href="#/vitrine">Ver a vitrine</a></div></div></section>';
     }
     var mund = t.por >= A.MIN_MUNDIAL * 100;
     var rows = cart.map(function (it) {
@@ -675,12 +724,12 @@
     var msg = A.wa(mensagem());
     if (f < 0) {
       h += '<div class="ct-cta"><p class="ct-open">A compra abre em <b>16/11, às 20h</b>. Seu carrinho fica salvo neste aparelho.</p>' +
-        '<a class="btn" href="' + GRUPO + '" target="_blank" rel="noopener" data-cta="grupo"><span>Entrar no grupo</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>' +
+        '<a class="btn" href="' + GRUPO + '" data-cta="grupo"><span>Entrar no grupo</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>' +
         '<a class="link" href="' + msg + '" target="_blank" rel="noopener">Enviar este carrinho no WhatsApp</a></div>';
     } else if (f <= 2) {
       h += '<div class="ct-cta"><p class="ct-open">Pré-venda aberta: você está comprando <b>' + JANELAS[f].na + '</b>.</p>' +
         '<a class="btn" href="' + msg + '" target="_blank" rel="noopener"><span>Finalizar no WhatsApp</span><span class="ar"><svg><use href="#arr"/></svg><svg><use href="#arr"/></svg></span></a>' +
-        '<a class="link" href="' + GRUPO + '" target="_blank" rel="noopener" data-cta="grupo">Entrar no grupo</a></div>';
+        '<a class="link" href="' + GRUPO + '" data-cta="grupo">Entrar no grupo</a></div>';
     } else {
       h += '<div class="ct-cta"><p class="ct-open">A pré-venda foi encerrada em 18/11, às 20h.</p></div>';
     }
@@ -766,13 +815,14 @@
   }
   function render(topo) {
     var R = lerRota();
-    if (['vitrine', 'kit', 'p', 'bonus', 'carrinho'].indexOf(R.r) < 0) R = { r: 'vitrine', id: null, q: new URLSearchParams() };
+    if (['vitrine', 'kit', 'p', 'bonus', 'carrinho', 'orcamento'].indexOf(R.r) < 0) R = { r: 'vitrine', id: null, q: new URLSearchParams() };
     rota = R;
     var html, title = 'Comprar';
     if (R.r === 'vitrine') { html = vitrine(R.q); title = VS.tab === 'kits' ? 'Kits' : 'Vitrine'; }
     else if (R.r === 'kit') { html = kitPagina(R.id); title = K[R.id] ? 'Kit ' + K[R.id].nome : 'Kit'; }
     else if (R.r === 'p') { html = produto(R.id); title = M[R.id] ? M[R.id].nome : 'Modelo'; }
     else if (R.r === 'bonus') { html = bonus(R.q); title = 'Bônus'; }
+    else if (R.r === 'orcamento') { html = orcamento(R.id, R.q); title = 'Orçamento'; }
     else { html = carrinho(); title = 'Carrinho'; }
     app.innerHTML = html;
     document.title = title + ' · Pré-venda Próxima Conquista · Achei Troféus';
@@ -780,6 +830,7 @@
     if (R.r === 'p') pintarProduto();
     if (R.r === 'kit') pintarKit();
     if (R.r === 'bonus') pintarJanelas();
+    if (R.r === 'orcamento') pintarOrcamento();
     navAtiva();
     pintarCarrinho();
     if (topo !== false) {
@@ -852,6 +903,8 @@
         break;
       }
       case 'bn-v': BN.v = +b.getAttribute('data-v'); pintarJanelas(); break;
+      case 'or-v': OR.v = +b.getAttribute('data-v'); pintarOrcamento(); break;
+      case 'or-mod': OR.mod = b.getAttribute('data-v'); pintarOrcamento(); break;
       case 'key': {
         var back = b.getAttribute('aria-pressed') !== 'true';
         b.setAttribute('aria-pressed', back ? 'true' : 'false');
@@ -877,6 +930,13 @@
   var buscaT;
   app.addEventListener('input', function (e) {
     var el = e.target;
+    if (el.id === 'orVal') {
+      var od = el.value.replace(/\D/g, '').slice(0, 6);
+      if (el.value !== od) el.value = od;
+      clearTimeout(buscaT);
+      buscaT = setTimeout(function () { OR.v = Math.max(0, +od || 0); pintarOrcamento(true); }, 200);
+      return;
+    }
     if (el.id === 'vBusca') {
       clearTimeout(buscaT);
       buscaT = setTimeout(function () { VS.q = el.value.trim(); VS.n = 48; pintarVitrine(); }, 160);

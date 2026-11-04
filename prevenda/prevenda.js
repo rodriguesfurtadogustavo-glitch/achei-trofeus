@@ -128,6 +128,7 @@
       if (st.innerHTML !== txt) st.innerHTML = txt;
     });
 
+    document.documentElement.classList.toggle('is-ended', f > 2);
     if (f !== faseAtual) { faseAtual = f; syncSeg(); syncHot(f); }
   }
 
@@ -309,7 +310,7 @@
       o.mun.innerHTML = ico('i-unlock') + '<span><b>Troféu Mundial a 70% OFF desbloqueado:</b> a partir de R$ 71,76 no tamanho de 22 cm.</span>';
     }
 
-    o.kits.href = 'comprar/#/vitrine?tab=kits&v=' + Math.round(v);
+    o.kits.href = v > 0 ? 'comprar/#/orcamento/' + Math.round(v) * 100 : 'comprar/#/orcamento';
 
     // Itens liberados e tabela de pacotes acompanham o simulador
     var gs = $$('#gGrid [data-min]'), on = 0;
@@ -693,6 +694,15 @@
   syncSeg();
   syncHot(faseAtual);
   render();
+
+  // Tabelas longas recolhidas no celular, abertas a partir de 800 px (como na página oficial)
+  (function () {
+    if (!window.matchMedia) return;
+    var mq = matchMedia('(min-width: 800px)');
+    var sync = function () { $$('[data-fold]').forEach(function (d) { d.open = mq.matches; }); };
+    sync();
+    if (mq.addEventListener) mq.addEventListener('change', sync); else if (mq.addListener) mq.addListener(sync);
+  })();
   tick();
   setInterval(tick, 1000);
 })();

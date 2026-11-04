@@ -88,12 +88,24 @@ Abre pelos botões "Ver produtos e kits" da página da oferta. Rotas por hash:
 - **Preço dos tamanhos maiores** dos modelos com faixa ("30 a 50 cm"): por enquanto só o menor tamanho.
 - Texto da aba **Carrinho** (não veio no material): o atual foi escrito para a prévia.
 
+### Completado a partir da página oficial
+- Título e descrição da página, respostas das perguntas, cadastro para o grupo, link do regulamento no rodapé.
+- "Ver kits para este valor" do simulador abre **`comprar/#/orcamento/<centavos>`**: a loja mostra o bônus do valor e
+  os kits que cabem nele (e alguns um pouco acima), com filtro por modalidade e valor digitável.
+- A pré-venda encerrada esconde os botões do grupo e mostra "A pré-venda terminou em 18/11, às 20h.".
+- No celular, a tabela dos 8 pacotes fica recolhida (abre a partir de 800 px), como na oficial.
+- Link "Pular para o conteúdo" nas duas páginas.
+
 ### Regra de design
 - **Sem emojis ou ícones de fogo** (nem emoji, nem desenho de chama) em nenhuma página. O fogo é só o efeito animado.
 
 ### Antes de publicar (pendências da prévia)
-- **Link do grupo:** os botões "Entrar no grupo" (`data-cta="grupo"`) abrem o WhatsApp da Achei com
-  mensagem pronta. Trocar pelo link de convite do grupo quando existir.
+- **Entrar no grupo** abre o **cadastro em 7 passos** (`prevenda/cadastro.js`), portado da página oficial com o
+  mesmo contrato: contato com autorização LGPD → regulamento lido até o fim (aceite com o SHA-256 do texto) →
+  5 perguntas → link do grupo, que vem do servidor. Usa `/achei-trofeus/api/{lead,aceite,quiz,whatsapp,evento,saude}`
+  e `/achei-trofeus/regulamento/v1/conteudo.html`, então a página precisa ser publicada em `grupohrz.com/achei-trofeus/`
+  (no lugar da atual). Fora desse endereço (prévia local, arquivo único), o cadastro avisa que a conexão falhou e
+  guarda os dados no aparelho para reenviar, igual à oficial. A loja abre o cadastro por `../#cadastro`.
 - **Fotos:** Troféu Mundial = `cut/rings.webp`; vôlei e areia = `ligadelas.webp`; outras modalidades =
   `cut/futsal.webp`; corporativo = `cimed.webp`; medalhas = `medalhas.webp`; troféus de 15 cm =
   `cut/podio.webp`. **E-sports não tem foto** (card ilustrado, "modelo em definição"). O chaveiro e os
