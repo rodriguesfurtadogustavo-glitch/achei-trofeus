@@ -51,7 +51,7 @@ Usa as mesmas fontes e fotos do site (`../fonts`, `../img`); CSS e JS ficam em `
 - **Fogo em volta:** a linha do pacote de R$ 5.000 (que libera o Mundial), o botão R$ 5.000 do comparativo,
   a coluna da 1ª hora e o card da 1ª hora têm chamas pelo contorno (canvas fixo por cima da página, bloco
   "Fogo em volta" do `prevenda.js`; a lista de elementos fica em `T`). A 1ª hora apaga quando fecha.
-- `prevenda/prevenda.js` — **todas as regras da campanha ficam no bloco `DADOS` no topo**: datas das
+- `prevenda/campanha.js` — **todas as regras da campanha ficam aqui** (antes no topo do `prevenda.js`): datas das
   janelas, pacotes, extras, sorteios, preços do Mundial, médias de medalha (R$ 11,29) e troféu (R$ 20,79).
   O simulador, a tabela "O mesmo pedido em cada janela", os itens liberados e a linha destacada
   dos 8 pacotes são calculados a partir dele. As tabelas fixas do HTML repetem os mesmos números:
@@ -60,6 +60,33 @@ Usa as mesmas fontes e fotos do site (`../fonts`, `../img`); CSS e JS ficam em `
   riscadas e desabilitadas no simulador → "encerrada". Para ver cada estado antes da data, use
   `?agora=`, por exemplo `/prevenda/?agora=2026-11-16T20:30` (1ª hora), `?agora=2026-11-17T10:00` (24h),
   `?agora=2026-11-19T00:00` (encerrada).
+
+## Loja da pré-venda (`prevenda/comprar/`) — prévia para aprovação
+Abre pelos botões "Ver produtos e kits" da página da oferta. Rotas por hash:
+`#/vitrine` (abas Todos, Troféus, Medalhas e Kits, filtro por modalidade, busca "Craque, 25 cm" e tamanho),
+`#/kit/<id>`, `#/p/<id>`, `#/bonus` e `#/carrinho`. A aba **Oferta** volta para a página da oferta.
+
+- `prevenda/campanha.js` — **regras da campanha, compartilhadas** pela página e pela loja (datas, pacotes,
+  janelas, sorteios, Mundial, relógio com `?agora=`). Mudou uma regra, muda nas duas.
+- `prevenda/fogo.js` — fogo compartilhado: as chamas em volta (`ACHEI.fogo.emVolta`) e os sprites.
+- `prevenda/comprar/catalogo.js` — **dados da prévia**, transcritos do texto da vitrine atual: 329 modelos
+  (nome, tamanhos, De/Por, desconto) e 19 kits. Conferido: o "Por" de todos bate com o desconto, e as peças do
+  "Copa com destaques" somam exatamente R$ 1.509,02. Fotos entram por `fotos: { 'id-do-modelo': 'caminho' }`
+  e `img` no kit; sem foto, a loja desenha uma ilustração marcada como tal.
+- `prevenda/comprar/loja.js` + `loja.css` — a loja. O carrinho fica salvo no aparelho e sai pelo WhatsApp
+  (antes da abertura: "Entrar no grupo" + "Enviar este carrinho"; durante a venda: "Finalizar no WhatsApp").
+  O resumo mostra pacote, medalhas e troféus por janela, extras, sorteios e quanto falta para o próximo pacote.
+  Com R$ 5.000 em outros produtos, o carrinho libera o Troféu Mundial a 70% (não conta para os pacotes).
+- Fogo nas melhores ofertas: kits que liberam o Mundial, o Mundial liberado no carrinho, o pacote de
+  R$ 5.000 e a janela da 1ª hora nos bônus (a 1ª hora apaga quando fecha).
+
+### Pendências da loja (chegam com o arquivo da página oficial)
+- **Fotos** de todos os modelos e kits.
+- **Modalidade** de 141 modelos (nomes de cidades, países, Neon…), que estão em "A classificar".
+- **Modalidade** de 4 kits que vieram sem ela no texto (dois "Torneio de duplas", um "Torneio por categorias"
+  e um "Circuito de duplas") e a **lista de peças** de 18 kits (só o "Copa com destaques" veio com peças).
+- **Preço dos tamanhos maiores** dos modelos com faixa ("30 a 50 cm"): por enquanto só o menor tamanho.
+- Texto da aba **Carrinho** (não veio no material): o atual foi escrito para a prévia.
 
 ### Regra de design
 - **Sem emojis ou ícones de fogo** (nem emoji, nem desenho de chama) em nenhuma página. O fogo é só o efeito animado.
