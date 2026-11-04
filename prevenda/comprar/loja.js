@@ -684,7 +684,7 @@
     } else {
       h += '<div class="ct-cta"><p class="ct-open">A pré-venda foi encerrada em 18/11, às 20h.</p></div>';
     }
-    return h + '<p class="fine">Valor do pedido: produtos pelo preço pago, sem Mundial, sem frete e sem juros. Formas de pagamento e frete em validação nesta prévia.</p>';
+    return h + '<p class="fine">Valor do pedido: produtos pelo preço pago, sem Mundial, sem frete e sem juros. Frete à parte, pago quando o pedido for realizado. Pagamento à vista ou parcelado no cartão, com juros pagos pelo cliente.</p>';
   }
   function mensagem() {
     var t = totais(), w = janelaVista(), r = calc(t.por / 100, w);

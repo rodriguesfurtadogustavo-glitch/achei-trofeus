@@ -98,9 +98,8 @@ Abre pelos botões "Ver produtos e kits" da página da oferta. Rotas por hash:
   `cut/futsal.webp`; corporativo = `cimed.webp`; medalhas = `medalhas.webp`; troféus de 15 cm =
   `cut/podio.webp`. **E-sports não tem foto** (card ilustrado, "modelo em definição"). O chaveiro e os
   demais extras são ilustrações, marcadas como tal.
-- **Respostas das perguntas que dependem de regra ainda não definida** foram escritas como "em validação":
-  cancelamento (crédito/reembolso e prazos), prazo para usar o pedido, condições de frete, formas de
-  pagamento e parcelamento, prazo de produção e entrega. Confirmar com a Achei e reescrever.
+- **Perguntas:** as respostas são as da página oficial da oferta (reembolso garantido, uso até setembro
+  de 2027, frete à parte, pagamento à vista ou parcelado no cartão).
 - Sorteios marcados como "sujeito a regulamento e autorização" e quantidades "propostas", como no material.
 - O simulador também mostra o valor **com** o bônus da janela (ex.: R$ 3.000 na 1ª hora ≈ R$ 894,25),
   calculado com as mesmas médias. Remover a frase em `render()` se a Achei preferir mostrar só o do pacote.
