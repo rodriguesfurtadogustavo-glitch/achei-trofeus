@@ -310,7 +310,7 @@
       o.mun.innerHTML = ico('i-unlock') + '<span><b>Troféu Mundial a 70% OFF desbloqueado:</b> a partir de R$ 71,76 no tamanho de 22 cm.</span>';
     }
 
-    o.kits.href = v > 0 ? 'comprar/#/orcamento/' + Math.round(v) * 100 : 'comprar/#/orcamento';
+    o.kits.href = A.LOJA_URL + (v > 0 ? '#/orcamento/' + Math.round(v) * 100 : '#/orcamento');
 
     // Itens liberados e tabela de pacotes acompanham o simulador
     var gs = $$('#gGrid [data-min]'), on = 0;
@@ -580,13 +580,13 @@
         rw = rd * .8; rh = rd * 1.45;
         a = k < .1 ? k / .1 : Math.pow(1 - k, 1.1);
         c.globalAlpha = a * .62;
-        c.drawImage(SPR[Math.min(NS - 1, Math.floor(k * NS))], p.x - rw, p.y - rh * .7, rw * 2, rh * 2);
+        c.drawImage(SPR[Math.max(0, Math.min(NS - 1, Math.floor(k * NS)))], p.x - rw, p.y - rh * .7, rw * 2, rh * 2);
       }
       for (i = 0; i < st.em.length; i++) {
         p = st.em[i]; k = p.t / p.life;
         c.globalAlpha = Math.max(0, (1 - k) * (.55 + .45 * Math.sin(p.t * 22 + p.ph)));
         rd = p.r * 5;
-        c.drawImage(SPR[Math.min(NS - 1, 2 + Math.floor(k * 8))], p.x - rd, p.y - rd, rd * 2, rd * 2);
+        c.drawImage(SPR[Math.max(0, Math.min(NS - 1, 2 + Math.floor(k * 8)))], p.x - rd, p.y - rd, rd * 2, rd * 2);
       }
       c.globalAlpha = 1;
     }
@@ -613,7 +613,7 @@
 
     function loop(now) {
       raf = 0;
-      var dt = Math.min(.05, (now - last) / 1000 || .016), time = now / 1000;
+      var dt = Math.max(0, Math.min(.05, (now - last) / 1000)) || .016, time = now / 1000;
       last = now;
       var busy = false;
       F.forEach(function (st) {

@@ -12,7 +12,7 @@
   var PACOTES = A.PACOTES, JANELAS = A.JANELAS, MUNDIAL = A.MUNDIAL, MARCAS = A.MARCAS;
   var IMG = '../../img/';
   var foto = function (p) { var I = window.ACHEI_FOTOS; return I && I[p] ? I[p] : IMG + p; };
-  var GRUPO = '../#cadastro';
+  var GRUPO = A.OFERTA_URL + '#cadastro';
   var app = $('#app');
 
   /* ======================================================================
@@ -667,7 +667,7 @@
       if (it.t === 'm') { var m = M[it.id]; meta = m.min + ' cm · ' + (m.tipo === 'm' ? 'Medalha' : 'Troféu') + ' · ' + centavos(u.por) + ' cada'; }
       else if (it.t === 'w') meta = 'Liberado com R$ 5.000 em outros produtos. Não conta para os pacotes.' + (mund ? '' : ' <b class="ct-warn">Volte a R$ 5.000 para manter o preço.</b>');
       else { var k = K[it.id], pp = it.p ? precoPecas(it.p) : k; meta = compo(pp.med, pp.tro) + (personalizado(it) ? ' · peças personalizadas' : '') + ' · ' + centavos(u.por) + ' o kit'; }
-      var href = it.t === 'm' ? '#/p/' + it.id : it.t === 'k' ? '#/kit/' + it.id : '../#mundial';
+      var href = it.t === 'm' ? '#/p/' + it.id : it.t === 'k' ? '#/kit/' + it.id : A.OFERTA_URL + '#mundial';
       return '<li class="ct-row' + (it.t === 'w' ? ' ct-row--w' : '') + '">' +
         '<a class="ct-art" href="' + href + '" tabindex="-1" aria-hidden="true">' + miniatura(it) + '</a>' +
         '<div class="ct-tx"><a class="ct-n" href="' + href + '">' + esc(nomeLinha(it)) + '</a><span class="ct-m">' + meta + '</span></div>' +

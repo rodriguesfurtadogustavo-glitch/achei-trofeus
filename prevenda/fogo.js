@@ -243,7 +243,7 @@
       p = s0.ps[i]; k = p.t / p.life;
       rd = p.r * (1 - k * .65); rw = rd * .8; rh = rd * 1.7;
       ctx.globalAlpha = (k < .12 ? k / .12 : Math.pow(1 - k, 1.1)) * (light ? .78 : .75);
-      ctx.drawImage(sp[Math.min(NS - 1, Math.floor(k * NS))], ox + p.x - rw, oy + p.y - rh * .7, rw * 2, rh * 2);
+      ctx.drawImage(sp[Math.max(0, Math.min(NS - 1, Math.floor(k * NS)))], ox + p.x - rw, oy + p.y - rh * .7, rw * 2, rh * 2);
     }
     ctx.globalAlpha = 1;
     // miolo limpo: o fogo fica em volta, o texto continua legível
@@ -263,7 +263,7 @@
 
   function loop(now) {
     raf = 0;
-    var dt = Math.min(.05, (now - last) / 1000 || .016), time = now / 1000;
+    var dt = Math.max(0, Math.min(.05, (now - last) / 1000)) || .016, time = now / 1000;
     last = now;
     var list = targets(), busy = false;
     list.forEach(function (t) {

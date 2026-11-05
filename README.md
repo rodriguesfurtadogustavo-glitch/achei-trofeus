@@ -98,6 +98,19 @@ Abre pelos botões "Ver produtos e kits" da página da oferta. Rotas por hash:
 - No celular, a tabela dos 8 pacotes fica recolhida (abre a partir de 800 px), como na oficial.
 - Link "Pular para o conteúdo" nas duas páginas.
 
+### Onde cada página fica publicada
+- **Página principal** (oferta, fogo, simulador, cadastro): `https://fechamesacheitrofeus.com/`
+- **Loja** (vitrine, kits, bônus, orçamento, carrinho): `https://cursohellenmartins.com.br/`
+- Os endereços ficam em `OFERTA_URL` e `LOJA_URL`, no `prevenda/campanha.js`, e nos links do HTML das duas páginas.
+  "Ver produtos e kits" abre `LOJA_URL#/vitrine`; os cards de modalidade e "Ver kits para este valor" abrem a vitrine
+  filtrada e o orçamento na loja. Na loja, "Oferta", o logo e "Página da oferta" voltam para `OFERTA_URL`, e
+  "Entrar no grupo" abre `OFERTA_URL#cadastro`.
+- Para subir: o arquivo único da página principal vira o `index.html` de fechamesacheitrofeus.com, e o da loja, o
+  `index.html` de cursohellenmartins.com.br. O carrinho fica salvo no navegador, no domínio da loja.
+- **Cadastro:** ele envia para `/achei-trofeus/api` e lê `/achei-trofeus/regulamento/v1/` **no mesmo domínio da
+  página principal**. Em fechamesacheitrofeus.com, esse servidor precisa existir lá (hoje ele está em grupohrz.com);
+  sem ele, o cadastro mostra "falhou a conexão".
+
 ### Regra de design
 - **Sem emojis ou ícones de fogo** (nem emoji, nem desenho de chama) em nenhuma página. O fogo é só o efeito animado.
 

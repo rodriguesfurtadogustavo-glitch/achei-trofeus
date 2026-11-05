@@ -14,6 +14,9 @@
   var T_FIM = Date.parse('2026-11-18T20:00:00-03:00');
 
   var WHATS = 'https://wa.me/5532998042012';
+  // Onde cada página está publicada: a principal (oferta e cadastro) e a loja (vitrine, kits, bônus, carrinho)
+  var OFERTA_URL = 'https://fechamesacheitrofeus.com/';
+  var LOJA_URL = 'https://cursohellenmartins.com.br/';
   var MIN_BONUS = 1300;       // abaixo disso: só o desconto da campanha
   var MIN_MUNDIAL = 5000;     // em outros produtos e kits
   var MEDALHA_CENT = 1129;    // média já vendida, medalha de metal
@@ -137,7 +140,7 @@
   var A = window.ACHEI = window.ACHEI || {};
   var exp = {
     T_ABRE: T_ABRE, T_H1: T_H1, T_H24: T_H24, T_FIM: T_FIM,
-    WHATS: WHATS, MIN_BONUS: MIN_BONUS, MIN_MUNDIAL: MIN_MUNDIAL, MEDALHA_CENT: MEDALHA_CENT, TROFEU_CENT: TROFEU_CENT, MAIS_MEDALHAS: MAIS_MEDALHAS,
+    WHATS: WHATS, OFERTA_URL: OFERTA_URL, LOJA_URL: LOJA_URL, MIN_BONUS: MIN_BONUS, MIN_MUNDIAL: MIN_MUNDIAL, MEDALHA_CENT: MEDALHA_CENT, TROFEU_CENT: TROFEU_CENT, MAIS_MEDALHAS: MAIS_MEDALHAS,
     PACOTES: PACOTES, JANELAS: JANELAS, SORTEIOS: SORTEIOS, MUNDIAL: MUNDIAL, MARCAS: MARCAS, ROTULOS: ROTULOS, RAIL_MAX: RAIL_MAX,
     $: $, $$: $$, RM: RM, clamp: clamp, milhar: milhar, reais: reais, centavos: centavos, pct: pct, lower1: lower1, ico: ico, wa: wa,
     agora: agora, fase: fase, partes: partes, p2: p2,
