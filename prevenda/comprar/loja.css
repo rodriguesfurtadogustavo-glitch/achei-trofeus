@@ -117,9 +117,10 @@
 
 /* Card de kit ---------------------------------------------------------- */
 .kt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
-.kt-rail-wrap { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 26px 0 30px; }
+.kt-rail-wrap { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 88px 0 40px; margin-top: -40px; }
+.lj-sec--rail .lj-sec-h { position: relative; z-index: 2; }
 .kt-rail-wrap::-webkit-scrollbar { display: none; }
-.kt-rail { display: flex; gap: 14px; width: max-content; padding: 0 max(var(--gut), calc((100vw - 1320px) / 2 + var(--gut))); }
+.kt-rail { position: relative; display: flex; gap: 14px; width: max-content; padding: 0 max(var(--gut), calc((100vw - 1320px) / 2 + var(--gut))); }
 .kt-rail .kt { width: clamp(272px, 24vw, 320px); scroll-snap-align: start; scroll-margin-left: max(var(--gut), calc((100vw - 1320px) / 2 + var(--gut))); }
 .kt { display: flex; flex-direction: column; border-radius: 22px; border: 1px solid var(--line); background: var(--ink-2); }
 .kt.is-mundial { border-color: rgba(255, 120, 30, .6); background: linear-gradient(175deg, #24140b, var(--ink-2) 45%); }

@@ -969,8 +969,9 @@
      no carrinho, pacote de R$ 5.000 e a janela da 1ª hora nos bônus
      ====================================================================== */
   var acabou = function () { return faseAgora() >= 3; };
-  var trilhoKits = function (el) { var r = el.closest('.kt-rail-wrap'); return r ? r.getBoundingClientRect() : null; };
-  A.fogo.emVolta({ items: function () { return $$('.kt.is-mundial'); }, clip: trilhoKits, heat: 1.1, size: .95, out: acabou });
+  // no trilho com rolagem lateral, a camada do fogo fica dentro do trilho e desliza junto com o card
+  var trilhoKits = function (el) { return el.closest('.kt-rail'); };
+  A.fogo.emVolta({ items: function () { return $$('.kt.is-mundial'); }, host: trilhoKits, heat: 1.1, size: .95, out: acabou });
   A.fogo.emVolta({ items: function () { return $$('.ct-mun.is-on'); }, heat: 1.25, size: 1, out: acabou });
   A.fogo.emVolta({ items: function () { return $$('.bn-pk[data-min="5000"]'); }, heat: 1, size: 1, out: acabou });
   A.fogo.emVolta({ items: function () { return $$('.bn-w--1'); }, heat: 1.2, size: 1, out: function () { return faseAgora() >= 1; } });

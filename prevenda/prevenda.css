@@ -279,17 +279,17 @@ b, strong { font-weight: 650; }
   background: conic-gradient(from var(--a), #ff3000, #ffb300 12%, #ff5a00 24%, rgba(255, 70, 0, .25) 38%, #ffe08a 52%, #ff3d00 64%, rgba(255, 70, 0, .25) 80%, #ff3000);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: burn 3.6s linear infinite; will-change: transform;
+  animation: burn 3.6s linear infinite;
 }
 /* calor que sobe do pé do card, tremulando */
 .hot::after {
-  content: ''; position: absolute; left: -15%; right: -15%; bottom: -35%; height: 80%; z-index: 0; pointer-events: none;
-  background: radial-gradient(closest-side, rgba(255, 120, 20, .6), rgba(255, 60, 0, .2) 55%, transparent);
-  filter: blur(18px); animation: flick 2.1s linear infinite; will-change: opacity;
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 70%; z-index: 0; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(75% 85% at 50% 108%, rgba(255, 120, 20, .55), rgba(255, 60, 0, .18) 55%, transparent 78%);
+  animation: flick 2.1s linear infinite;
 }
 @keyframes burn { to { --a: 360deg; } }
 @keyframes flick { 0% { opacity: .8; } 9% { opacity: 1; } 17% { opacity: .72; } 31% { opacity: .96; } 44% { opacity: .78; } 58% { opacity: 1; } 71% { opacity: .7; } 86% { opacity: .92; } 100% { opacity: .8; } }
-.hot > canvas.flame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; will-change: transform;
+.hot > canvas.flame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; border-radius: inherit;
   -webkit-mask-image: linear-gradient(to top, #000 40%, rgba(0, 0, 0, .55) 72%, transparent 96%); mask-image: linear-gradient(to top, #000 40%, rgba(0, 0, 0, .55) 72%, transparent 96%); }
 .hot > :not(canvas) { position: relative; z-index: 2; }
 .hot-obj { z-index: 0 !important; }
@@ -752,7 +752,7 @@ b, strong { font-weight: 650; }
 /* --------------------------------------------------------------------------
    Fogo em volta (canvas fixo desenhado pelo prevenda.js)
    -------------------------------------------------------------------------- */
-.fire-ring { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 55; pointer-events: none; }
+.fire-ring { position: absolute; left: 0; top: 0; z-index: 55; display: block; pointer-events: none; }
 .pk-tbl tbody tr.on-fire > * { background: linear-gradient(180deg, rgba(255, 150, 50, .16), rgba(255, 90, 10, .07)); }
 .pk-tbl tbody tr.on.on-fire > * { background: linear-gradient(180deg, rgba(255, 110, 20, .22), rgba(255, 70, 0, .08)); }
 .pk-hot { display: inline-flex; align-items: center; gap: 5px; margin-left: 10px; padding: 4px 8px; border-radius: 6px; vertical-align: 5px;
